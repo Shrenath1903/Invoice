@@ -1,0 +1,98 @@
+<mvc:View controllerName="invoiceapp.controller.main"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+	xmlns:u="sap.ui.unified"
+	xmlns:upload="sap.m.upload"
+    xmlns="sap.m">
+    <Page id="page" title="{i18n>title}">
+      <u:FileUploader
+            id="uploader"
+            fileType="xlsx"
+            multiple="false"
+            fileEmpty=".onFileEmpty"
+            typeMissmatch=".onTypeMismatch"
+            sendXHR="true"
+            useMultipart="false"
+            placeholder="Choose an Excel file..."
+            httpRequestMethod="Put"
+            uploadOnChange="true"
+            uploadComplete=".onUploadComplete"
+            width="100%" />
+
+
+
+
+<Button press=".fileupload" text="Upload"></Button>
+
+    	<ScrollContainer width="100%" horizontal="true" vertical="false">
+
+	<Table id="idInvoiceTable"
+		inset="false"
+		items="{path: '/Invoice'}"
+		width="auto"> <!-- Enable table to auto-expand -->
+		
+		<headerToolbar>
+			<OverflowToolbar>
+				<content>
+					<Title text="Invoice" level="H2"/>
+				</content>
+			</OverflowToolbar>
+		</headerToolbar>
+
+		<columns>
+			<Column >
+				<Text text="PO No." />
+			</Column>
+			<Column >
+				<Text text="Invoice No." />
+			</Column>
+			<Column >
+				<Text text="Date" />
+			</Column>
+			<Column >
+				<Text text="Company Name" />
+			</Column>
+			<Column >
+				<Text text="Bill To" />
+			</Column>
+			<Column >
+				<Text text="Ship To" />
+			</Column>
+		
+			<Column>
+				<Text text="Total" />
+			</Column>
+			<Column >
+				<Text text="Amount Paid" />
+			</Column>
+			<Column >
+				<Text text="Balance Due" />
+			</Column>
+			<Column >
+				<Text text="Download" />
+			</Column>
+		</columns>
+
+		<items>
+			<ColumnListItem vAlign="Middle" type="Active" press="onNavigation">
+					
+				<cells>
+					<ObjectIdentifier title="{po_no}" />
+					<Text text="{invoice_no}" />
+					<Text text="{path: 'date', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' }}" />
+					<Text text="{company_name}" />
+					<Text text="{bill_to}" />
+					<Text text="{ship_to}" />
+					<Text text="{total}" />
+					<Text text="{amount_paid}"  />
+					<Text text="{balance_due}" />
+					<Button icon="sap-icon://download"  press="onPress"/>
+
+				</cells>
+			</ColumnListItem>
+		</items>
+	</Table>
+</ScrollContainer>
+
+    </Page>
+</mvc:View>

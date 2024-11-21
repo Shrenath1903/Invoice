@@ -1,0 +1,274 @@
+<mvc:View
+    controllerName="invoiceapp.controller.edit"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+    xmlns:m="sap.m"
+    xmlns="sap.uxap"
+    xmlns:f="sap.ui.layout.form"
+>
+    <m:Page
+        id="messageHandlingPage"
+        busy="{busyIndicatorModel>/busy}"
+        showHeader="false"
+    >
+        <ObjectPageLayout
+            id="ObjectPageLayout"
+            upperCaseAnchorBar="false"
+            showFooter="true"
+        >
+            <headerContent>
+                <m:Title
+                    text="Invoice Generator"
+                    level="H4"
+                    class="customTitleLarge"
+                />
+            </headerContent>
+
+            <sections>
+                <!-- Invoice Header Section -->
+                <ObjectPageSection title="Invoice Header">
+                    <subSections>
+                        <ObjectPageSubSection>
+                            <f:SimpleForm
+                                editable="true"
+                                layout="ColumnLayout"
+                                columnsM="2"
+                                columnsL="2"
+                                columnsXL="4"
+                            >
+                                <f:content>
+                                    <m:Label text="Purchase Order Number" />
+                                    <m:Input
+                                        width="75%"
+                                        value="{invoiceModel>/po_no}"
+                                    />
+
+                                    <m:Label text="Invoice Number" />
+                                    <m:Input
+                                        width="75%"
+                                        value="{invoiceModel>/invoice_no}"
+                                    />
+
+                                    <m:Label text="Date" />
+
+                                    <!-- <m:DatePicker width="75%"   value="{invoiceModel>/date}" displayFormat="MM/dd/yyyy" /> -->
+                                    <m:DatePicker
+                                        width="75%"
+                                        value="{'path':'invoiceModel>/date','type':'sap.ui.model.type.Date','formatOptions': {'pattern': 'dd-MM-yyyy'}}"
+                                    />
+
+                                    <m:Label text="Company Name" />
+                                    <m:Input
+                                        width="75%"
+                                        value="{invoiceModel>/company_name}"
+                                    />
+
+                                    <m:Label text="Payment Terms" />
+                                    <m:Input
+                                        width="75%"
+                                        value="{invoiceModel>/payment_terms}"
+                                    />
+
+                                    <m:Label text="Due Date" />
+                                    <m:DatePicker
+                                        width="75%"
+                                        placeholder="Select Due Date"
+                                        value="{'path':'invoiceModel>/due_date','type':'sap.ui.model.type.Date','formatOptions': {'pattern': 'dd-MM-yyyy'}}"
+                                        displayFormat="MM/dd/yyyy"
+                                    />
+
+                                    <m:Label text="Bill To" />
+                                    <m:TextArea
+                                        width="75%"
+                                        value="{invoiceModel>/bill_to}"
+                                    />
+
+                                    <m:Label text="Ship To" />
+                                    <m:TextArea
+                                        width="75%"
+                                        value="{invoiceModel>/ship_to}"
+                                    />
+
+                                    <m:Label
+                                        text="Currency"
+                                        wrapping="true"
+                                    />
+                                    <m:Select width="75%">
+                                        <core:Item
+                                            key="selectOption"
+                                            text="--SELECT OPTION--"
+                                        />
+                                        <core:Item
+                                            key="INR"
+                                            text="INR (₹)"
+                                        />
+                                        <core:Item
+                                            key="USD"
+                                            text="USD ($)"
+                                        />
+                                    </m:Select>
+                                </f:content>
+                            </f:SimpleForm>
+                        </ObjectPageSubSection>
+                    </subSections>
+                </ObjectPageSection>
+
+                <!-- Invoice Items Section -->
+                <ObjectPageSection title="Invoice Items">
+                    <subSections>
+                        <ObjectPageSubSection>
+                            <m:Table
+                                id="invoiceTable"
+                                items="{invoiceItemModel>/invoiceItems}"
+                                inset="false"
+                                width="100%"
+                            >
+                                <m:headerToolbar>
+                                    <m:Toolbar>
+                                        <m:Title text="Line Items" />
+                                        <m:ToolbarSpacer />
+                                        <m:Button
+                                            text="Add Item"
+                                            press=".onAddItem"
+                                        />
+                                    </m:Toolbar>
+                                </m:headerToolbar>
+                                <m:columns>
+                                    <m:Column>
+                                        <m:Text text="Description" />
+                                    </m:Column>
+                                    <m:Column>
+                                        <m:Text text="Quantity" />
+                                    </m:Column>
+                                    <m:Column>
+                                        <m:Text text="Rate" />
+                                    </m:Column>
+                                    <m:Column>
+                                        <m:Text text="Amount" />
+                                    </m:Column>
+                                    <m:Column>
+                                        <m:Text text="Actions" />
+                                    </m:Column>
+                                </m:columns>
+                                <m:items>
+                                    <m:ColumnListItem>
+                                        <m:cells>
+                                            <m:Input
+                                                placeholder="Enter Description"
+                                                value="{invoiceItemModel>description}"
+                                            />
+                                            <m:Input
+                                                width="55%"
+                                                type="Number"
+                                                placeholder="Qty"
+                                                value="{invoiceItemModel>qty}"
+                                                liveChange=".onQuantityChange"
+                                            />
+                                            <m:Input
+                                                width="55%"
+                                                type="Number"
+                                                placeholder="Rate"
+                                                value="{invoiceItemModel>rate}"
+                                                liveChange=".onRateChange"
+                                            />
+                                            <m:Text
+                                                text="{= ${invoiceItemModel>qty} * ${invoiceItemModel>rate}}"
+                                            />
+                                            <m:Button
+                                                text="Delete"
+                                                type="Reject"
+                                                press=".onDeleteItem"
+                                            />
+                                        </m:cells>
+                                    </m:ColumnListItem>
+                                </m:items>
+                            </m:Table>
+                        </ObjectPageSubSection>
+                    </subSections>
+                </ObjectPageSection>
+            </sections>
+            <!-- Invoice Details Section -->
+            <ObjectPageSection title="Invoice Details">
+                <subSections>
+                    <ObjectPageSubSection>
+                        <f:SimpleForm
+                            editable="true"
+                            layout="ColumnLayout"
+                            columnsM="2"
+                            columnsL="2"
+                            columnsXL="4"
+                        >
+                            <f:content>
+                                <m:Label text="Subtotal" />
+                                <m:Input
+                                    width="50%"
+                                    value="{invoiceModel>/sub_total}"
+                                    enabled="false"
+                                />
+
+                                <m:Label text="Discount" />
+                                <m:Input
+                                    width="50%"
+                                    value="{invoiceModel>/discount}"
+                                    liveChange=".onCalculateTotal"
+                                />
+
+                                <m:Label text="Tax" />
+                                <m:Input
+                                    width="50%"
+                                    value="{invoiceModel>/tax}"
+                                    liveChange=".onCalculateTotal"
+                                />
+
+                                <m:Label text="Shipping" />
+                                <m:Input
+                                    width="50%"
+                                    value="{invoiceModel>/shipping}"
+                                    liveChange=".onCalculateTotal"
+                                />
+
+                                <m:Label text="Total" />
+                                <m:Input
+                                    width="50%"
+                                    enabled="false"
+                                    value="{invoiceModel>/total}"
+                                />
+
+                                <m:Label text="Amount Paid" />
+                                <m:Input
+                                    width="50%"
+                                    value="{invoiceModel>/amount_paid}"
+                                    liveChange=".onCalculateBalance"
+                                />
+
+                                <m:Label text="Balance Due" />
+                                <m:Input
+                                    width="50%"
+                                    value="{invoiceModel>/balance_due}"
+                                    enabled="false"
+                                />
+                            </f:content>
+                        </f:SimpleForm>
+                    </ObjectPageSubSection>
+                </subSections>
+            </ObjectPageSection>
+            <!-- Footer -->
+            <footer>
+                <m:Bar>
+                    <m:contentRight>
+                        <m:Button
+                            text="Update"
+                            type="Emphasized"
+                            press=".updateInvoice"
+                        />
+                        <m:Button
+                            text="Download PDF"
+                            press=".onDownloadPDF"
+                        />
+                       
+                    </m:contentRight>
+                </m:Bar>
+            </footer>
+        </ObjectPageLayout>
+    </m:Page>
+</mvc:View>

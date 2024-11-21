@@ -1,0 +1,136 @@
+{
+  "_version": "1.65.0",
+  "sap.app": {
+    "id": "invoiceapp",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:basic",
+      "version": "1.15.5",
+      "toolsId": "5b99ba6f-80b9-441e-b2e1-de18ec48ed6d"
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "/odata/v2/invoice-service/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "odataVersion": "2.0"
+        }
+      }
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "invoice_app-invoice_app": {
+          "semanticObject": "invoice_app",
+          "action": "invoice_app",
+          "title": "{{flpTitle}}",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": false,
+    "dependencies": {
+      "minUI5Version": "1.130.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "invoiceapp.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "controlAggregation": "pages",
+        "controlId": "app",
+        "transition": "slide",
+        "type": "View",
+        "viewType": "XML",
+        "path": "invoiceapp.view"
+      },
+      "routes": [
+        {
+          "name": "Routemain",
+          "pattern": ":?query:",
+          "target": [
+            "Targetmain"
+          ]
+        },
+        {
+          "pattern": "Invoice/{po_no}",
+          "name": "edit",
+          "target": "edit"
+        }
+      ],
+      "targets": {
+        "Targetmain": {
+          "id": "main",
+          "name": "main"
+        },
+        "edit": {
+          "viewName": "edit",
+          "viewId": "edit"
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "invoiceapp.view.App",
+      "type": "XML",
+      "id": "App"
+    }
+  }
+}

@@ -1,0 +1,1 @@
+using invoice_service as service from '../../srv/service';

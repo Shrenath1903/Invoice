@@ -1,0 +1,12 @@
+# ### Step 1: Create File Metadata Entry
+# POST http://localhost:4004/odata/v4/invoice-service/downloadPDF
+# Content-Type: application/json
+# {
+#     "po_no": 12345
+# }
+
+
+### Step 1: Create File Metadata Entry
+GET http://localhost:4004/odata/v2/invoice-service/PDFEntity
+Content-Type: application/json
+
