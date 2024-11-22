@@ -93,6 +93,21 @@
 		</items>
 	</Table>
 </ScrollContainer>
-
+ <footer>
+                <Bar>
+                    <contentRight>
+                        <Button
+                            text="Offline"
+                            type="Emphasized"
+                            press=".offline"
+                        />
+                        <Button
+                            text="Download PDF"
+                            press=".onDownloadPDF"
+                        />
+                       
+                    </contentRight>
+                </Bar>
+            </footer>
     </Page>
 </mvc:View>

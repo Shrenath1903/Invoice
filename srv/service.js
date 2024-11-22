@@ -10,7 +10,9 @@ module.exports = cds.service.impl(async function () {
     //     console.log(JSON.stringify(req.data))
     //     req.data.url = `/invoice-service/Files(${req.data.ID})/content`
     // })
-
+    this.on('POST','Invoice', async (req,next) => {
+      return next();
+    });
     this.on('READ', 'PDFEntity', async (req,next) => {
         const getUrlPath = (req) => req._.req?.originalUrl || req._.req?.url || '';
 

@@ -49,3 +49,23 @@ entity Files:  cuid,managed{
     size: Integer;
     url: String;
 }
+entity tempInvoice:managed {
+    key po_no         : Integer;
+        invoice_no    : Integer;
+        date          : Date;
+        company_name  : String;
+        bill_to       : String;
+        ship_to       : String;
+        payment_terms : String;
+        due_date      : Date;
+        sub_total     : Integer;
+        discount      : Integer;
+        tax           : Integer;
+        shipping      : Integer;
+        total         : Integer;
+        amount_paid   : Integer;
+        balance_due   : Integer;
+        Notes         : String;
+        Terms         : String;
+        Currency      : String;
+};

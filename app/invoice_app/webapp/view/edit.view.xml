@@ -265,6 +265,10 @@
                             text="Download PDF"
                             press=".onDownloadPDF"
                         />
+                        <m:Button
+                            text="Offline"
+                            press=".downloadInvoice"
+                        />
                        
                     </m:contentRight>
                 </m:Bar>

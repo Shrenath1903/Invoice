@@ -11,7 +11,7 @@ sap.ui.define([
         },
 
         onPress: function (oEvent) {
-            invoiceRef = this
+            invoiceRef = this;
             const po_no = oEvent.getSource().getBindingContext().getObject().po_no;
 
             const oBindingContext = oEvent.getSource().getBindingContext();
@@ -79,6 +79,12 @@ sap.ui.define([
 
         },
         
+        offline: function(oEvent)
+        {
+            this.getOwnerComponent().getRouter().navTo("edit",{
+                po_no: "temp",
+            });
+        },
         
         onFileAllowed: function()
         {

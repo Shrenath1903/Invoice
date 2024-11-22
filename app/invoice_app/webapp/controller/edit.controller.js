@@ -19,8 +19,12 @@ sap.ui.define([
         },
 
         _onObjectMatched: function (oEvent) {
-            this.po_no =oEvent.getParameter("arguments").po_no;
-            this.loadData(this.po_no);
+            var argument = oEvent.getParameter("arguments")
+            if (!argument.po_no == "temp")
+            {
+                this.po_no =argument.po_no;
+                this.loadData(this.po_no);
+            }
         },
         loadData: function(po_no)
         {
@@ -75,9 +79,16 @@ sap.ui.define([
                 }
             });
         },
-        onDownloadPDF: function () {
-
-            var sPath = `/PDFEntity(po_no=${this.po_no})`; 
+        onDownloadPDF: function (po_no_t) {
+            if(po_no_t)
+            {
+                var po_no = po_no_t
+            }
+            else
+            {
+                var po_no = this.po_no
+            }
+            var sPath = `/PDFEntity(po_no=${po_no})`; 
     
             const sServiceUrl = this.getView().getModel().sServiceUrl;
             const sParsedServiceUrl = sServiceUrl.indexOf("/") === 2 ? sServiceUrl.substring(2) : sServiceUrl;
@@ -85,6 +96,56 @@ sap.ui.define([
             window.open(sUrl, '_blank');
           },
     
+        //   offline 
+
+        downloadInvoice: function (oEvent) {
+            var invoiceModel = this.getView().getModel("invoiceModel")
+            var payload = invoiceModel.oData;
+
+            if (payload) {
+                this._createEntity(payload)
+            } else {
+                MessageToast.show("No data was there.");
+            }
+        },
+
+
+
+          _createEntity: function (payload) {
+            // var data = payload
+            console.log(payload)
+
+            var oDataModel = this.getView().getModel();
+            var path = `/Invoice`
+            oDataModel.create(path,payload, {
+            success: function (oData, response) {
+                invoiceRef.po_no = oData.po_no
+                invoiceRef.onDownloadPDF()
+  
+            },
+            error: function (error) {
+                // Handle error if the PDF could not be retrieved
+                sap.m.MessageToast.show("Error downloading PDF");
+                console.error("Error downloading PDF:", error);
+            }
+        });
+
+            // var settings = {
+            //     url: "/odata/v2/invoice-service/tempInvoice",
+            //     method: "POST",
+            //     data: payload
+            // };
+
+            // return new Promise((resolve, reject) => {
+            //     $.ajax(settings)
+            //         .done((results) => {
+            //             resolve(results.d.ID);
+            //         })
+            //         .fail((err) => {
+            //             reject(err);
+            //         });
+            // });
+        },
         
     });
 });
