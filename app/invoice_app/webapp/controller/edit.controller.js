@@ -13,6 +13,8 @@ sap.ui.define([
             this.getView().setModel(invoiceModel,"invoiceModel");
             var invoiceItemModel = new JSONModel
             this.getView().setModel(invoiceItemModel,"invoiceItemModel");
+            var visibilityModel = new JSONModel
+            this.getView().setModel(visibilityModel,"visibilityModel");
 
             var oRouter = this.getOwnerComponent().getRouter();
             oRouter.getRoute("edit").attachPatternMatched(this._onObjectMatched, this);
@@ -20,10 +22,18 @@ sap.ui.define([
 
         _onObjectMatched: function (oEvent) {
             var argument = oEvent.getParameter("arguments")
-            if (!argument.po_no == "temp")
+            var visibilityModel = this.getView().getModel("visibilityModel")
+
+            if (argument.po_no != "temp")
             {
+                visibilityModel.setProperty("/v_local",false)
+                visibilityModel.setProperty("/v_db",true)
                 this.po_no =argument.po_no;
                 this.loadData(this.po_no);
+            }
+            else{
+                visibilityModel.setProperty("/v_local",true)
+                visibilityModel.setProperty("/v_db",false)
             }
         },
         loadData: function(po_no)
@@ -80,13 +90,13 @@ sap.ui.define([
             });
         },
         onDownloadPDF: function (po_no_t) {
-            if(po_no_t)
+            if(po_no_t && po_no_t.getParameter)
             {
-                var po_no = po_no_t
+                var po_no = this.po_no
             }
             else
             {
-                var po_no = this.po_no
+                var po_no = po_no_t
             }
             var sPath = `/PDFEntity(po_no=${po_no})`; 
     
@@ -100,8 +110,23 @@ sap.ui.define([
 
         downloadInvoice: function (oEvent) {
             var invoiceModel = this.getView().getModel("invoiceModel")
+            var invoiceItemModel = this.getView().getModel("invoiceItemModel")
+            // invoiceItemModel.setProperty("/po_no",this.po_no)
+            // invoiceItemModel.setProperty("/po_no",this.po_no)
             var payload = invoiceModel.oData;
-
+            var invoiceItemsData = []
+            
+            if (invoiceItemModel.getData().invoiceItems) {
+                invoiceItemsData = invoiceItemModel.getData().invoiceItems;
+            }
+            
+            for(var i=0; invoiceItemsData.length>i; i++)
+                {
+                    invoiceItemsData[i].po_no_po_no = this.po_no
+                }
+                
+                payload.Items = invoiceItemModel.oData.invoiceItems
+            
             if (payload) {
                 this._createEntity(payload)
             } else {
@@ -147,5 +172,27 @@ sap.ui.define([
             // });
         },
         
+
+        onAddItem: function () {
+
+            var invoiceItemModel = this.getView().getModel("invoiceItemModel");
+            var newItem = {
+                // po_no_po_no: "501",
+                // item_id: "",
+                description: "test",
+                qty: "45",
+                rate: "100",
+                amount: "50"
+            };
+
+
+            var aItems = invoiceItemModel.getProperty("/invoiceItems") || [];
+
+            aItems.push(newItem);
+
+
+            invoiceItemModel.setProperty("/invoiceItems", aItems);
+        },
+
     });
 });

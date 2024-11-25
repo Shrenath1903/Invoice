@@ -134,6 +134,12 @@
                                     </m:Toolbar>
                                 </m:headerToolbar>
                                 <m:columns>
+                                    <!-- <m:Column>
+                                        <m:Text text="Po number" />
+                                    </m:Column> -->
+                                    <!-- <m:Column>
+                                        <m:Text text="Item" />
+                                    </m:Column> -->
                                     <m:Column>
                                         <m:Text text="Description" />
                                     </m:Column>
@@ -152,7 +158,18 @@
                                 </m:columns>
                                 <m:items>
                                     <m:ColumnListItem>
-                                        <m:cells>
+                                        <m:cells>                       
+                                <!-- <m:Input
+                                    placeholder="Pr no"
+                                    value="{invoiceItemModel>po_no_po_no}"
+                                    
+                                /> -->
+                                <!-- <m:Input
+                                    placeholder="Item"
+                                    value="{invoiceItemModel>item_id}"
+                                    
+                                /> -->
+
                                             <m:Input
                                                 placeholder="Enter Description"
                                                 value="{invoiceItemModel>description}"
@@ -172,7 +189,7 @@
                                                 liveChange=".onRateChange"
                                             />
                                             <m:Text
-                                                text="{= ${invoiceItemModel>qty} * ${invoiceItemModel>rate}}"
+                                                text="{= ${visibilityModel>qty} * ${invoiceItemModel>rate}}"
                                             />
                                             <m:Button
                                                 text="Delete"
@@ -199,6 +216,7 @@
                             columnsXL="4"
                         >
                             <f:content>
+   
                                 <m:Label text="Subtotal" />
                                 <m:Input
                                     width="50%"
@@ -260,14 +278,17 @@
                             text="Update"
                             type="Emphasized"
                             press=".updateInvoice"
+                            visible="{visibilityModel>/v_db}"
                         />
                         <m:Button
                             text="Download PDF"
                             press=".onDownloadPDF"
+                            visible="{visibilityModel>/v_db}"
                         />
                         <m:Button
-                            text="Offline"
+                            text="Download Pdf"
                             press=".downloadInvoice"
+                            visible="{visibilityModel>/v_local}"
                         />
                        
                     </m:contentRight>

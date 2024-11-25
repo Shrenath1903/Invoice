@@ -5,7 +5,6 @@ service invoice_service {
     entity InvoiceItems as projection on db.InvoiceItems;
     entity PDFEntity as projection on db.PDFEntity;
     entity Files as projection on db.Files;
-    entity tempInvoice as projection on db.tempInvoice;
 
 }
 

@@ -97,7 +97,7 @@
                 <Bar>
                     <contentRight>
                         <Button
-                            text="Offline"
+                            text="Enter Invoice"
                             type="Emphasized"
                             press=".offline"
                         />
