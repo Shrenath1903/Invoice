@@ -5,11 +5,14 @@ const PDFDocument = require('pdfkit');
 
 const { Readable } = require('stream');
 const XLSX = require('xlsx')
-const Busboy = require('busboy');
-const formidable = require('formidable');
+
 const SequenceHelper = require("./lib/SequenceHelper");
 
+const { sendMail } = require('@sap-cloud-sdk/mail-client');
+
 module.exports = cds.service.impl(async function () {
+
+ 
     // this.before('CREATE', 'Files', req => {
     //     console.log('Create called')
     //     console.log(JSON.stringify(req.data))
@@ -36,10 +39,24 @@ module.exports = cds.service.impl(async function () {
     //   }
     // });
 
+// Send mail 
+    this.on('POST','sendmail', async (req,next) => {
+      const mailConfig = {
+        to: 'shrenathuiux@gmail.com',
+        subject: 'Test On Premise Destination',
+        text: 'If you receive this e-mail, you are successful.'
+      };
+      sendMail({ destinationName: 'mail_destination' }, [mailConfig]);
+    console.log("working:",mailConfig)
+      return next();
+    });
 
+//  For Edit page to Invoice Entity
     this.on('POST','Invoice', async (req,next) => {
       return next();
     });
+
+//  To Generate the PDF document and send it 
     this.on('READ', 'PDFEntity', async (req,next) => {
         const getUrlPath = (req) => req._.req?.originalUrl || req._.req?.url || '';
 
@@ -76,19 +93,37 @@ module.exports = cds.service.impl(async function () {
                     ...invoice,
                     items: invoiceItems || [],
                 };
-
-                // Generate the PDF content
-                const bufferData = await generatePdfBuffer(invoiceData);
-
                 // Set metadata for the PDF
                 const fileName = `Invoice_${po_no || pr_no}.pdf`;
                 const contentType = 'application/pdf';
+
+                // Generate the PDF content
+                const bufferData = await generatePdfBuffer(invoiceData);
+                const mailConfig = {
+                  to: 'shrenathuiux@gmail.com',
+                  subject: fileName,
+                  text: 'Your Invoice.',
+                  attachments: [
+                    {
+                        filename: "test-filename", 
+                        content: bufferData, 
+                        contentType: contentType, 
+                    },
+                ],
+                };
+                sendMail({ destinationName: 'mail_destination' }, [mailConfig]);
+                
+                console.log("working:",mailConfig)
+
 
                 // Set response headers
                 req._.res.writeHead(200, {
                     'Content-Type': contentType,
                     'Content-Disposition': `attachment; filename="${fileName}"`,
                 });
+
+                // Mail sending 
+               
 
                 // Send the PDF as the response
                 req._.res.end(bufferData);
@@ -110,8 +145,6 @@ module.exports = cds.service.impl(async function () {
     });
     //  Excel
 
-
-
     this.on('POST','Files', async (req,next) => {
 
      try {
@@ -123,8 +156,7 @@ module.exports = cds.service.impl(async function () {
         }
     });
         
-    this.
-    on('PUT','Files', async (req,next) => {
+    this.on('PUT','Files', async (req,next) => {
 
         if (req.data.content) {
             try {
@@ -257,7 +289,7 @@ module.exports = cds.service.impl(async function () {
 // }
 
 
-
+// PDf document design and Buffer Generateion
 async function generatePdfBuffer(invoice) {
   const doc = new PDFDocument({ margin: 50 });
 
@@ -376,14 +408,7 @@ async function generatePdfBuffer(invoice) {
           doc.text('No items available for this invoice.', { align: 'center' });
       }
 
-      // Total Section
-      // doc.moveDown(2);
-      // doc.fontSize(12).font('Helvetica').text(`Total: Rs. ${invoice.total}`,350);
-      // // doc.text(`Paid Amount: Rs. ${invoice.amount_paid}`,300,{ align: 'right' });
-      // // doc.text(`Balance Due: Rs. ${invoice.balance_due}`,300,{ align: 'right' });
-      // doc.moveDown();
-
-
+  
 
       // Draw Total Section
       const summaryStartY = doc.y + 20; // Adjust spacing after the last table row
@@ -439,23 +464,7 @@ async function generatePdfBuffer(invoice) {
   });
 }
 
-// Sample Invoice Data
-const sampleInvoice = {
-  client_name: '[Client Name]',
-  client_address: '[Client Address line 1], [City], [State] [Postal Code]',
-  invoice_no: 2001321,
-  date: '11/25/2024',
-  items: [
-      { description: 'Item 1 description', qty: 15, rate: 10, amount: 150 },
-      { description: 'Item 2 description', qty: 10, rate: 5, amount: 50 },
-      { description: 'Item 3 description', qty: 20, rate: 5.5, amount: 110 },
-  ],
-  total: 310,
-  amount_paid: 0,
-  balance_due: 310,
-  Notes: 'test',
-};
-
+// Excel
 
 async function streamToBuffer(stream) {
     return new Promise((resolve, reject) => {
@@ -475,34 +484,4 @@ async function streamToBuffer(stream) {
     })
   }
 
-// async function streamToBuffer(stream) {
-//     return new Promise((resolve, reject) => {
-//       const buffers = []
-  
-//       stream.on('data', (dataChunk) => buffers.push(dataChunk))
-  
-//       stream.on('end', () => {
-//         const buffer = Buffer.concat(buffers)
-//         resolve(buffer)
-//       })
-  
-//       stream.on('error', (error) => {
-//         console.error('File streaming error', error)
-//         reject(error)
-//       })
-//     })
-//   }
 
-  async function insertRowsIntoInvoice(rows, req) {
-    try {
-      const db = cds.transaction(req); // Get the transaction for the request
-  
-      // Loop through rows and insert them into the invoice entity
-      for (const row of rows) {
-        await db.run(INSERT.into('db.Invoice').entries(row));
-      }
-    } catch (error) {
-      console.error('Error inserting data into invoice entity:', error);
-      throw error;
-    }
-  }
