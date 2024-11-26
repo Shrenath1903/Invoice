@@ -10,3 +10,6 @@
 GET http://localhost:4004/odata/v2/invoice-service/PDFEntity
 Content-Type: application/json
 
+### // Check mail
+POST http://localhost:4004/odata/v4/invoice-service/sendmail
+Content-Type: application/json

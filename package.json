@@ -8,14 +8,20 @@
   "dependencies": {
     "@cap-js-community/odata-v2-adapter": "^1.13.7",
     "@cap-js/hana": "^1",
+    "@sap-cloud-sdk/connectivity": "^3.23.0",
+    "@sap-cloud-sdk/http-client": "^3.23.0",
+    "@sap-cloud-sdk/mail-client": "^3.23.0",
     "@sap/cds": "^8",
     "@sap/cds-odata-v2-adapter-proxy": "^1.9.21",
+    "@sap/xsenv": "^5.4.0",
+    "@sap/xssec": "^4.2.7",
     "buffer": "^6.0.3",
     "busboy": "^1.6.0",
     "cds-swagger-ui-express": "^0.10.0",
     "express": "^4",
     "formidable": "^3.5.2",
     "multer": "^1.4.5-lts.1",
+    "passport": "^0.7.0",
     "pdfkit": "^0.15.1",
     "pdfkit-table": "^0.1.99",
     "xlsx": "^0.18.5"
@@ -35,13 +41,21 @@
   },
   "cds": {
     "requires": {
-      "odata-v2": {
-        "kind": "odata",
-        "model": "*"
+     "odata-v2": {
+        "auth": {
+          "kind": "xsuaa"
+        },
+      "mailService": {
+        "kind": "rest",
+        "credentials": {
+          "destination": "mail_destination",
+          "forwardAuthToken": true
+        }
       }
     },
     "sql": {
       "native_hana_associations": false
     }
   }
+}
 }
