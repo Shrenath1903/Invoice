@@ -24,8 +24,24 @@ sap.ui.define([
             oRouter.getRoute("edit").attachPatternMatched(this._onObjectMatched, this);
 
             // this.onNumbervalidation(oEvent)
+
+            this.setheaderImage()
+
+
         },
 
+        setheaderImage: function() {
+            var sImagePath1 = jQuery.sap.getModulePath("invoiceapp", "/Image/invoiceFormat-1.png")
+            var sImagePath2 = jQuery.sap.getModulePath("invoiceapp", "/Image/invoiceFormat-2.png")
+
+            var imageData = {
+                img_1: sImagePath1,
+                img_2: sImagePath2
+            };
+
+            var imageModel = new sap.ui.model.json.JSONModel(imageData);
+            this.getView().setModel(imageModel, "imageModel");
+        },
 
         _onObjectMatched: function (oEvent) {
             var argument = oEvent.getParameter("arguments")
@@ -199,7 +215,8 @@ sap.ui.define([
                 balance_due   : "4900",
                 Notes         : "Good",
                 Terms         : "no",
-                Currency      : "Rs",
+                Currency      : "INR",
+                template       : 1
             }
             var invoiceModel = this.getView().getModel("invoiceModel")
             invoiceModel.setData(data);
@@ -316,7 +333,7 @@ sap.ui.define([
             invoiceRef.setInitialSelectState(oEvent)
         },
 
-
+// Mail pop Over start
         onOpenPopover: function () {
             var oView = this.getView();
 
@@ -324,7 +341,7 @@ sap.ui.define([
 
             if (!this._oDialog) {
                 this._oDialog = sap.ui.xmlfragment(oView.getId(),
-                    "invoiceapp.view.InputPopover",
+                    "invoiceapp.view.mailPopOver",
                     this
                 );
                 oView.addDependent(this._oDialog);
@@ -336,7 +353,7 @@ sap.ui.define([
          
         },
 
-        onCloseDialog: function () {
+        onMailPopup: function () {
             if (this._oDialog) {
                 this._oDialog.close();
             }
@@ -368,25 +385,54 @@ sap.ui.define([
                     },
                     error: function (oError) {
                         var errorJson = JSON.parse(oError.responseText);
-                        // MessageBox.error(errorJson.error.message.value, {
-                        //     icon: sap.m.MessageBox.Icon.ERROR,
-                        //     title: oError.statusText
-                        // });
-                        cegControllerRef._showServiceError(errorJson)
-                        //MessageToast.show("Error While Saving CEG Information");
-                        // var errorJson = JSON.parse(oError.responseText);
-                        // MessageBox.error(errorJson.error.message.value, {
-                        //     icon: sap.m.MessageBox.Icon.ERROR,
-                        //     title: oError.statusText
-                        // });
-                       inputEnableModel.setProperty("/busy",false)
-
+                        invoiceRef._showServiceError(errorJson)
                     }
                 });
 
             // Close the dialog
             this._oDialog.close();
         },
+// Mail pop Over end
+onTemplateclick: function () {
+    var oView = this.getView();
+
+    // Check if the fragment is already loaded
+
+    if (!this.template_dialog) {
+        this.template_dialog = sap.ui.xmlfragment(oView.getId(),
+            "invoiceapp.view.templatePopOver",
+            this
+        );
+        oView.addDependent(this.template_dialog);
+        this.template_dialog.open();
+    } else {
+        this.template_dialog.open();
+    }
+
+ 
+},
+
+onImageSelect: function (oEvent) {
+    const sImageId = oEvent.getSource().getCustomData()[0].getValue();
+    if (sImageId === "image_1") {
+        console.log("Image 1 selected");
+        // Logic for image 1
+    } else if (sImageId === "image_2") {
+        console.log("Image 2 selected");
+        // Logic for image 2
+    }
+},
+
+
+ontemplatePopOver: function () {
+    if (this.template_dialog) {
+        this.template_dialog.close();
+    }
+},
+
+// template pop over Start
+
+
 
     });
 });

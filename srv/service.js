@@ -104,7 +104,15 @@ this.on('READ', 'PDFEntity', async (req, next) => {
           const contentType = 'application/pdf';
 
           // Generate the PDF content
-          const bufferData = await generatePdfBuffer(invoiceData);
+          if(invoiceData.template == 1)
+          {
+            var bufferData = await generatePdfBufferTemplate_1(invoiceData);
+          }
+          else
+          {
+            var bufferData = await generatePdfBufferTemplate_2(invoiceData);
+          }
+          // const bufferData = await generatePdfBuffer(invoiceData);
 
           // Send mail if `mail_id` is available in the invoice
           const to = invoice.mail_id;
@@ -242,9 +250,228 @@ this.on('READ', 'PDFEntity', async (req, next) => {
 });
 
 
+async function generatePdfBufferTemplate_2(invoice) {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new jsPDF();
+
+      // Determine the currency symbol
+      let currency = invoice.Currency === "USD" ? '$' : '';
+      console.log("Currency:", currency);
+
+      // Header
+      doc.autoTable({
+        body: [
+          [
+            {
+              content: `${invoice.company_name}`,
+              styles: {
+                halign: 'left',
+                fontSize: 20,
+                textColor: '#ffffff'
+              }
+            },
+            {
+              content: 'Invoice',
+              styles: {
+                halign: 'right',
+                fontSize: 20,
+                textColor: '#ffffff'
+              }
+            }
+          ],
+        ],
+        theme: 'plain',
+        styles: {
+          fillColor: '#3366ff'
+        }
+      });
+
+      // Invoice details
+      doc.autoTable({
+        body: [
+          [
+            {
+              content: `Purchase Order No.: ${invoice.po_no}\nDate: ${invoice.date}\nInvoice number: ${invoice.invoice_no}`,
+              styles: {
+                halign: 'right'
+              }
+            }
+          ],
+        ],
+        theme: 'plain'
+      });
+
+      // Billing and shipping addresses
+      doc.autoTable({
+        body: [
+          [
+            {
+              content: `Billed to:\n${invoice.bill_to_name}\n${invoice.bill_to}\n${invoice.bill_to_zip} - ${invoice.bill_to_city}\n${invoice.bill_to_country}`,
+              styles: {
+                halign: 'left'
+              }
+            },
+            {
+              content: `From:\n${invoice.bill_from_name}\n${invoice.bill_from_address}\n${invoice.bill_from_zip} - ${invoice.bill_from_city}\n${invoice.bill_from_country}`,
+              styles: {
+                halign: 'right'
+              }
+            }
+          ],
+        ],
+        theme: 'plain'
+      });
+
+      // Amount due
+      doc.autoTable({
+        body: [
+          [
+            {
+              content: 'Amount due:',
+              styles: {
+                halign: 'right',
+                fontSize: 14
+              }
+            }
+          ],
+          [
+            {
+              content: `${invoice.Currency}${invoice.balance_due}`,
+              styles: {
+                halign: 'right',
+                fontSize: 20,
+                textColor: '#3366ff'
+              }
+            }
+          ],
+          [
+            {
+              content: `Due date: ${invoice.due_date}`,
+              styles: {
+                halign: 'right'
+              }
+            }
+          ]
+        ],
+        theme: 'plain'
+      });
+
+      // Products and services
+      const items = invoice.items.map(item => [
+        item.description,
+        item.qty,
+        `${invoice.Currency}${item.rate}`,
+        `${invoice.Currency}${item.amount}`
+      ]);
+      doc.autoTable({
+        head: [['Items', 'Quantity', 'Price', 'Amount']],
+        body: items,
+        theme: 'striped',
+        headStyles: {
+          fillColor: '#343a40'
+        }
+      });
+
+      // Subtotal, tax, and total amount
+      doc.autoTable({
+        body: [
+          [
+            {
+              content: 'Subtotal:',
+              styles: {
+                halign: 'right'
+              }
+            },
+            {
+              content: `${invoice.Currency}${invoice.sub_total}`,
+              styles: {
+                halign: 'right'
+              }
+            },
+          ],
+          [
+            {
+              content: 'Total tax:',
+              styles: {
+                halign: 'right'
+              }
+            },
+            {
+              content: `${invoice.Currency}${invoice.tax}`,
+              styles: {
+                halign: 'right'
+              }
+            },
+          ],
+          [
+            {
+              content: 'Total amount:',
+              styles: {
+                halign: 'right'
+              }
+            },
+            {
+              content: `${invoice.Currency}${invoice.total}`,
+              styles: {
+                halign: 'right'
+              }
+            },
+          ],
+        ],
+        theme: 'plain'
+      });
+
+      // Terms and notes
+      doc.autoTable({
+        body: [
+          [
+            {
+              content: 'Terms & notes',
+              styles: {
+                halign: 'left',
+                fontSize: 14
+              }
+            }
+          ],
+          [
+            {
+              content: invoice.Terms,
+              styles: {
+                halign: 'left'
+              }
+            }
+          ],
+        ],
+        theme: "plain"
+      });
+
+      // Footer
+      doc.autoTable({
+        body: [
+          [
+            {
+              content: 'This is a centered footer',
+              styles: {
+                halign: 'center'
+              }
+            }
+          ]
+        ],
+        theme: "plain"
+      });
+
+      const pdfBuffer = doc.output('arraybuffer');
+      resolve(Buffer.from(pdfBuffer));
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
 
 
-async function generatePdfBuffer(invoice) {
+
+async function generatePdfBufferTemplate_1(invoice) {
   return new Promise((resolve, reject) => {
       try {
           const doc = new jsPDF('p', 'pt');
@@ -280,12 +507,12 @@ doc.text(String(invoice.Company_gst_no || 'GST No Missing'), 80, startY);
 doc.setFont('helvetica', 'bold');
 doc.text("PURCHASE ORDER NO. :", startX, startY += lineSpacing.NormalSpacing);
 doc.setFont('helvetica', 'normal');
-doc.text(String(invoice.po_no || 'PO No Missing'), 160, startY);
+doc.text(String(invoice.po_no || 'PO No Missing'), 190, startY);
 
 doc.setFont('helvetica', 'bold');
 doc.text("PAYMENT TERMS :", startX, startY += lineSpacing.NormalSpacing);
 doc.setFont('helvetica', 'normal');
-doc.text(String(invoice.payment_terms || 'Payment Terms Missing'), 130, startY);
+doc.text(String(invoice.payment_terms || 'Payment Terms Missing'), 150, startY);
 
 // Invoice Details
 let tempY = startY - 30;
