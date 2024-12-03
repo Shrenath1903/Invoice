@@ -1,5 +1,0 @@
-po_no;invoice_no;date;company_name;bill_to;ship_to;payment_terms;due_date;sub_total;discount;tax;shipping;total;amount_paid;balance_due;Notes;Terms;Currency
-1001;5001;2024-11-01;ABC Corp;123 Elm St;456 Maple Ave;Net 30;2024-12-01;1000;50;100;20;1070;500;570;First Invoice;Standard Terms;INR
-1002;5002;2024-11-02;XYZ Ltd;789 Oak St;101 Pine St;Net 15;2024-11-17;2000;100;200;30;2130;1500;630;Second Invoice;Standard Terms;USD
-1003;5003;2024-11-03;Acme Inc;202 Birch Rd;303 Cedar Rd;Net 45;2024-12-18;1500;75;150;25;1600;1200;400;Third Invoice;Custom Terms;EUR
-1004;5004;2024-11-04;Global Solutions;404 Spruce Ln;505 Aspen Ln;Net 60;2024-01-03;3000;150;300;50;3200;2500;700;Fourth Invoice;Standard Terms;GBP

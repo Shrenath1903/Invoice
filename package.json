@@ -20,6 +20,8 @@
     "cds-swagger-ui-express": "^0.10.0",
     "express": "^4",
     "formidable": "^3.5.2",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
     "multer": "^1.4.5-lts.1",
     "passport": "^0.7.0",
     "pdfkit": "^0.15.1",
@@ -41,21 +43,22 @@
   },
   "cds": {
     "requires": {
-     "odata-v2": {
-        "auth": {
-          "kind": "xsuaa"
+      "odata-v2": {
+        "auth":
+        {
+          "kind":"xsuaa"
         },
-      "mailService": {
-        "kind": "rest",
-        "credentials": {
-          "destination": "mail_destination",
-          "forwardAuthToken": true
+        "mailService": {
+          "kind": "rest",
+          "credentials": {
+            "destination": "mail_destination",
+            "forwardAuthToken": true
+          }
         }
+      },
+      "sql": {
+        "native_hana_associations": false
       }
-    },
-    "sql": {
-      "native_hana_associations": false
     }
   }
-}
 }
