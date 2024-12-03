@@ -9,12 +9,14 @@ entity Invoice:managed {
         invoice_no    : Integer;
         date          : Date;
         company_name  : String;
+        Company_gst_no   : String;
         bill_to       : String;
         ship_to       : String;
         payment_terms : String;
         due_date      : Date;
         sub_total     : Integer;
         discount      : Integer;
+        discountPercent : Integer;
         tax           : Integer;
         shipping      : Integer;
         total         : Integer;
@@ -23,13 +25,14 @@ entity Invoice:managed {
         Notes         : String;
         Terms         : String;
         Currency      : String;
+        mail_id       : String;
+        text       : String;
         Items         : Composition of many InvoiceItems
                                 on Items.po_no = $self; // 
 }
 
 entity InvoiceItems {
     key po_no      : Association to Invoice;
-    // key item_id    : Integer @sequence; // Enable auto-generation using a sequence
     key item_id         : UUID;  
     description    : String;
     qty            : Integer;

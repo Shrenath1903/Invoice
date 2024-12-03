@@ -2,6 +2,8 @@ const cds = require('@sap/cds');
 // const PDFDocument = require('pdfkit-table');
 
 const PDFDocument = require('pdfkit');
+const { jsPDF } = require("jspdf");
+require('jspdf-autotable');
 
 const { Readable } = require('stream');
 const XLSX = require('xlsx')
@@ -10,6 +12,8 @@ const SequenceHelper = require("./lib/SequenceHelper");
 
 const { sendMail } = require('@sap-cloud-sdk/mail-client');
 
+// const uuid = require('uuid');
+// const { InvoiceItems } = this.entities;
 module.exports = cds.service.impl(async function () {
 
  
@@ -40,16 +44,18 @@ module.exports = cds.service.impl(async function () {
     // });
 
 // Send mail 
-    this.on('POST','sendmail', async (req,next) => {
-      const mailConfig = {
-        to: 'shrenathuiux@gmail.com',
-        subject: 'Test On Premise Destination',
-        text: 'If you receive this e-mail, you are successful.'
-      };
-      sendMail({ destinationName: 'mail_destination' }, [mailConfig]);
-    console.log("working:",mailConfig)
-      return next();
-    });
+    // this.on('POST','mail', async (req,next) => {
+    //   const data = req.data
+    //   const mailConfig = {
+    //     to: 'shrenathuiux@gmail.com',
+    //     subject: 'Test On Premise Destination',
+    //     text: 'If you receive this e-mail, you are successful.'
+    //   };
+    //   sendMail({ destinationName: 'mail_destination' }, [mailConfig]);
+    // console.log("working:",mailConfig)
+    //   return next();
+    // });
+    
 
 //  For Edit page to Invoice Entity
     this.on('POST','Invoice', async (req,next) => {
@@ -57,92 +63,98 @@ module.exports = cds.service.impl(async function () {
     });
 
 //  To Generate the PDF document and send it 
-    this.on('READ', 'PDFEntity', async (req,next) => {
-        const getUrlPath = (req) => req._.req?.originalUrl || req._.req?.url || '';
+this.on('READ', 'PDFEntity', async (req, next) => {
+  const getUrlPath = (req) => req._.req?.originalUrl || req._.req?.url || '';
+  // Check if the URL path indicates a PDF download request
+  if (req.data.po_no && getUrlPath(req).includes('/pdf')) {
+      const { po_no, pr_no } = req.data;
+      console.log("Received PO Number:", po_no);
 
-        // Check if the URL path indicates a PDF download request
-        if (req.data.po_no && getUrlPath(req).includes('/pdf')) {
-            const { po_no, pr_no } = req.data;
-            console.log("Received PO Number:", po_no);
+      try {
+          if (!po_no && !pr_no) {
+              req.error(400, 'PO Number or PR Number is missing.');
+              return;
+          }
 
-            try {
-                if (!po_no && !pr_no) {
-                    req.error(400, 'PO Number or PR Number is missing.');
-                    return;
-                }
+          // Fetch the invoice data using the PO number
+          const invoice = await cds.run(
+              SELECT.one.from('db.Invoice')
+                  .where({ po_no })
+          );
 
-                // Fetch the invoice data using the PO number
-                const invoice = await cds.run(
-                    SELECT.one.from('db.Invoice')
-                        .where({ po_no })
-                );
+          if (!invoice) {
+              req.error(404, `Invoice with PO number ${po_no} not found.`);
+              return;
+          }
 
-                if (!invoice) {
-                    req.error(404, `Invoice with PO number ${po_no} not found.`);
-                    return;
-                }
+          // Fetch the related InvoiceItems
+          const invoiceItems = await cds.run(
+              SELECT.from('db.InvoiceItems')
+                  .where({ po_no })
+          );
 
-                // Fetch the related InvoiceItems
-                const invoiceItems = await cds.run(
-                    SELECT.from('db.InvoiceItems')
-                        .where({ po_no })
-                );
+          // Combine invoice and items
+          const invoiceData = {
+              ...invoice,
+              items: invoiceItems || [],
+          };
 
-                // Combine invoice and items
-                const invoiceData = {
-                    ...invoice,
-                    items: invoiceItems || [],
-                };
-                // Set metadata for the PDF
-                const fileName = `Invoice_${po_no || pr_no}.pdf`;
-                const contentType = 'application/pdf';
+          // Set metadata for the PDF
+          const fileName = `Invoice_${po_no || pr_no}.pdf`;
+          const contentType = 'application/pdf';
 
-                // Generate the PDF content
-                const bufferData = await generatePdfBuffer(invoiceData);
-                const mailConfig = {
-                  to: 'shrenathuiux@gmail.com',
-                  subject: fileName,
-                  text: 'Your Invoice.',
-                  attachments: [
-                    {
-                        filename: "test-filename", 
-                        content: bufferData, 
-                        contentType: contentType, 
-                    },
-                ],
-                };
-                sendMail({ destinationName: 'mail_destination' }, [mailConfig]);
-                
-                console.log("working:",mailConfig)
+          // Generate the PDF content
+          const bufferData = await generatePdfBuffer(invoiceData);
+
+          // Send mail if `mail_id` is available in the invoice
+          const to = invoice.mail_id;
+          const text = invoice.text;
+
+          if (to) {
+              try {
+                  const mailConfig = {
+                      to: to,
+                      subject: fileName,
+                      text: text,
+                      attachments: [
+                          {
+                              filename: "test-filename",
+                              content: bufferData,
+                              contentType: contentType,
+                          },
+                      ],
+                  };
+                  await sendMail({ destinationName: 'mail_destination' }, [mailConfig]);
+                  console.log("Email sent successfully.");
+              } catch (mailError) {
+                  console.error("Error sending email:", mailError);
+              }
+          }
+
+          // Send the PDF as the response
+          req._.res.writeHead(200, {
+              'Content-Type': contentType,
+              'Content-Disposition': `attachment; filename="${fileName}"`,
+          });
+          req._.res.end(bufferData);
+
+      } catch (error) {
+          console.error('Error processing PDF download:', error);
+          req.error(500, 'An error occurred while processing the PDF.');
+      }
+  } else {
+      // If it's not a PDF request, continue with the normal read operation
+      try {
+          const attachments = await next();
+          return attachments;
+      } catch (error) {
+          console.error('Error in normal data fetch:', error);
+          req.error(500, 'An error occurred while fetching the data.');
+      }
+  }
+});
 
 
-                // Set response headers
-                req._.res.writeHead(200, {
-                    'Content-Type': contentType,
-                    'Content-Disposition': `attachment; filename="${fileName}"`,
-                });
-
-                // Mail sending 
-               
-
-                // Send the PDF as the response
-                req._.res.end(bufferData);
-
-            } catch (error) {
-                console.error('Error processing PDF download:', error);
-                req.error(500, 'An error occurred while processing the PDF.');
-            }
-        } else {
-            // If it's not a PDF request, continue with the normal read operation
-            try {
-                const attachments = await next();
-                return attachments;
-            } catch (error) {
-                console.error('Error in normal data fetch:', error);
-                req.error(500, 'An error occurred while fetching the data.');
-            }
-        }
-    });
     //  Excel
 
     this.on('POST','Files', async (req,next) => {
@@ -229,240 +241,151 @@ module.exports = cds.service.impl(async function () {
     });
 });
 
-// Helper function to generate PDF content
-// async function generatePdfBuffer(invoice) {
-//     const doc = new PDFDocument();
-
-//     return new Promise((resolve, reject) => {
-//         const chunks = [];
-//         doc.on('data', (chunk) => chunks.push(chunk));
-//         doc.on('end', () => resolve(Buffer.concat(chunks)));
-//         doc.on('error', (err) => {
-//             console.error('Error in PDF generation:', err);
-//             reject(err);
-//         });
-
-//         // Add Invoice Header
-//         doc.fontSize(18).text(`Invoice #${invoice.invoice_no}`, { align: 'center' });
-//         doc.moveDown();
-//         doc.fontSize(12).text(`Date: ${invoice.date}`);
-//         doc.text(`Company: ${invoice.company_name}`);
-//         doc.text(`Bill To: ${invoice.bill_to}`);
-//         doc.text(`Ship To: ${invoice.ship_to}`);
-//         doc.moveDown();
-//         doc.text(`Payment Terms: ${invoice.payment_terms}`);
-//         doc.text(`Due Date: ${invoice.due_date}`);
-//         doc.moveDown();
-
-//         // Add Items Table
-//         if (invoice.items && invoice.items.length > 0) {
-//             const table = {
-//                 headers: [
-//                     // { label: "ID", width: 50 },
-//                     { label: "Description", width: 200 },
-//                     { label: "Quantity", width: 70 },
-//                     { label: "Rate", width: 70 },
-//                     { label: "Amount", width: 70 },
-//                 ],
-//                 rows: invoice.items.map((item) => [
-//                     // item.item_id,
-//                     item.description,
-//                     item.qty,
-//                     item.rate,
-//                     item.amount,
-//                 ]),
-//             };
-
-//             // Add the table to the document
-//             doc.table(table, {
-//                 prepareHeader: () => doc.fontSize(12).font("Helvetica-Bold"),
-//                 prepareRow: (row, i) => doc.fontSize(12).font("Helvetica"),
-//                 startY: doc.y + 20,
-//             });
-//         } else {
-//             doc.text('No items available for this invoice.');
-//         }
-
-//         // Finalize the document
-//         doc.end();
-//     });
-// }
 
 
-// PDf document design and Buffer Generateion
+
 async function generatePdfBuffer(invoice) {
-  const doc = new PDFDocument({ margin: 50 });
-
   return new Promise((resolve, reject) => {
-      const chunks = [];
-      doc.on('data', (chunk) => chunks.push(chunk));
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-      doc.on('error', (err) => {
-          console.error('Error in PDF generation:', err);
-          reject(err);
-      });
+      try {
+          const doc = new jsPDF('p', 'pt');
 
-      // Add Business Header
-      doc.fontSize(16).font('Helvetica-Bold').text(`[Business Name]`, { align: 'left' });
-      doc.fontSize(10).font('Helvetica').text(`[Business Address 1]`);
-      doc.text(`[City], [State] [Postal Code]`);
-      doc.text(`[Business Phone Number]`);
-      doc.text(`[Business Email Address]`);
-      doc.moveDown();
+          // Company Details
+        
 
-      // Invoice Title
-      doc.fontSize(18).font('Helvetica-Bold').text(`Invoice`, { align: 'center' });
-      doc.moveDown();
-
-      // Client and Invoice Info
-      doc.fontSize(12).font('Helvetica').text(`Bill To: client name`);
-      doc.text("address ");
-      doc.moveDown();
-
-      doc.text(`Invoice Number: 402`);
-      doc.text(`Date: 4-2-2024`);
-      doc.moveDown();
-
-      // Items Table
-      if (invoice.items && invoice.items.length > 0) {
-          doc.moveDown();
-          doc.fontSize(12).font('Helvetica-Bold').text('Items:');
-          doc.moveDown();
-
-          const tableTop = doc.y;
-          const itemRowHeight = 20;
-          const tableHeaders = ['Description', 'Quantity', 'Rate', 'Amount'];
-
-          // Column width allocation
-          const columnWidths = {
-              description: 200, // Larger width for Description
-              quantity: 70,
-              rate: 70,
-              amount: 70,
+          const fontSizes = {
+              SubTitleFontSize: 12,
+              NormalFontSize: 10,
           };
-          
-          const columnPositions = {
-              description: 50,
-              quantity: 50 + columnWidths.description,
-              rate: 50 + columnWidths.description + columnWidths.quantity,
-              amount: 50 + columnWidths.description + columnWidths.quantity + columnWidths.rate,
+
+          const lineSpacing = {
+              NormalSpacing: 12,
           };
-          
-          // Draw table headers
-          doc.font('Helvetica-Bold').fontSize(12);
-          doc.lineWidth(0.5);
-          
-          tableHeaders.forEach((header, index) => {
-              let x = Object.values(columnPositions)[index];
-              let width = Object.values(columnWidths)[index];
-          
-              // Draw header text centered
-              doc.text(header, x, tableTop, { width, align: 'center' });
-          
-              // Draw vertical line
-              if (index > 0) {
-                  doc.moveTo(x - 5, tableTop - 5).lineTo(x - 5, tableTop + 20).stroke();
-              }
-          });
-          
-          // Draw a horizontal line below the headers
-          doc.moveTo(50, tableTop + 20).lineTo(50 + columnWidths.description + columnWidths.quantity + columnWidths.rate + columnWidths.amount, tableTop + 20).stroke();
-          
-          // Draw table rows
-          doc.font('Helvetica').fontSize(10);
-          
-          invoice.items.forEach((item, rowIndex) => {
-              const rowY = tableTop + (rowIndex + 1) * 30; // Adjust row height as needed
-          
-              // Draw item cells with text centered
-              doc.text(item.description, columnPositions.description, rowY, {
-                  width: columnWidths.description,
-                  align: 'center',
-              });
-              doc.text(item.qty.toString(), columnPositions.quantity, rowY, {
-                  width: columnWidths.quantity,
-                  align: 'center',
-              });
-              doc.text(`Rs. ${item.rate.toFixed(2)}`, columnPositions.rate, rowY, {
-                  width: columnWidths.rate,
-                  align: 'center',
-              });
-              doc.text(`Rs. ${item.amount.toFixed(2)}`, columnPositions.amount, rowY, {
-                  width: columnWidths.amount,
-                  align: 'center',
-              });
 
+          const rightStartCol1 = 400;
+          const rightStartCol2 = 480;
+          const startX = 40;
+          let startY = 50;
+
+ // Title
+doc.setFont('helvetica', 'bold');
+doc.setFontSize(fontSizes.SubTitleFontSize);
+doc.text(String(invoice.company_name || 'Company Name Missing'), startX, startY += 30, 'left');
+
+// Company Info
+doc.setFontSize(fontSizes.NormalFontSize);
+doc.text("GSTIN:", startX, startY += lineSpacing.NormalSpacing);
+doc.setFont('helvetica', 'normal');
+doc.text(String(invoice.Company_gst_no || 'GST No Missing'), 80, startY);
+
+doc.setFont('helvetica', 'bold');
+doc.text("PURCHASE ORDER NO. :", startX, startY += lineSpacing.NormalSpacing);
+doc.setFont('helvetica', 'normal');
+doc.text(String(invoice.po_no || 'PO No Missing'), 160, startY);
+
+doc.setFont('helvetica', 'bold');
+doc.text("PAYMENT TERMS :", startX, startY += lineSpacing.NormalSpacing);
+doc.setFont('helvetica', 'normal');
+doc.text(String(invoice.payment_terms || 'Payment Terms Missing'), 130, startY);
+
+// Invoice Details
+let tempY = startY - 30;
+doc.setFont('helvetica', 'bold');
+doc.text("INVOICE NO:", rightStartCol1, tempY += lineSpacing.NormalSpacing);
+doc.setFont('helvetica', 'normal');
+doc.text(String(invoice.invoice_no || 'Invoice No Missing'), rightStartCol2, tempY);
+
+doc.setFont('helvetica', 'bold');
+doc.text("INVOICE DATE:", rightStartCol1, tempY += lineSpacing.NormalSpacing);
+doc.setFont('helvetica', 'normal');
+doc.text(String(invoice.date || 'Invoice Date Missing'), rightStartCol2, tempY);
+
+doc.setFont('helvetica', 'bold');
+doc.text("DUE DATE:", rightStartCol1, tempY += lineSpacing.NormalSpacing);
+doc.setFont('helvetica', 'normal');
+doc.text(String(invoice.due_date || 'Due Date Missing'), rightStartCol2, tempY);
+
+doc.setFont('helvetica', 'bold');
+doc.text("BILL TO:", rightStartCol1, tempY += lineSpacing.NormalSpacing);
+doc.setFont('helvetica', 'normal');
+doc.text(String(invoice.bill_to || 'Bill To Missing'), rightStartCol2, tempY);
+
+doc.setFont('helvetica', 'bold');
+doc.text("SHIP TO:", rightStartCol1, tempY += lineSpacing.NormalSpacing);
+doc.setFont('helvetica', 'normal');
+doc.text(String(invoice.ship_to || 'Ship To Missing'), rightStartCol2, tempY);
+
+doc.setFont('helvetica', 'bold');
+doc.text("Currency:", rightStartCol1, tempY += lineSpacing.NormalSpacing);
+doc.setFont('helvetica', 'normal');
+doc.text(String(invoice.Currency || 'Currency Missing'), rightStartCol2, tempY);
+
+
+
+          const columns = [
+            { title: "Description", dataKey: "description" },
+            { title: "Quantity", dataKey: "qty" },
+            { title: "Rate", dataKey: "rate" },
+            { title: "Amount", dataKey: "amount" },
+        ];
+
+        const rows = invoice.items.map(item => ({
+            description: item.description,
+            qty: item.qty.toString(),
+            rate: item.rate.toString(),
+            amount: item.amount.toString(),
+        }));
+
+        doc.autoTable({
+            columns,
+            body: rows,
+            startY: startY + 50,
+            styles: { fontSize: 8 },
+        });
+          // Footer
+          startY = doc.lastAutoTable.finalY + 30;
+          doc.setFont('helvetica', 'bold');
+          doc.text("Sub Total:", rightStartCol1, startY);
+          doc.text(String(invoice.sub_total || '0.00'), rightStartCol2, startY);
           
-              // Draw vertical lines for each column
-              Object.values(columnPositions).forEach((x, colIndex) => {
-                  if (colIndex > 0) {
-                      doc.moveTo(x - 5, rowY - 5).lineTo(x - 5, rowY + 25).stroke();
-                  }
-              });
-          });
+          doc.text("Tax Rs.:", rightStartCol1, startY += lineSpacing.NormalSpacing);
+          doc.setFont('helvetica', 'normal');
+          doc.text(String(invoice.tax || '0.00'), rightStartCol2, startY);
           
-          // Draw a horizontal line after the last row
-          const lastRowY = tableTop + invoice.items.length * 30;
-          doc.moveTo(50, lastRowY + 20).lineTo(50 + columnWidths.description + columnWidths.quantity + columnWidths.rate + columnWidths.amount, lastRowY + 20).stroke();
-      } else {
-          doc.text('No items available for this invoice.', { align: 'center' });
+          doc.setFont('helvetica', 'bold');
+          doc.text("Shipping Charges:", rightStartCol1, startY += lineSpacing.NormalSpacing);
+          doc.setFont('helvetica', 'normal');
+          doc.text(String(invoice.shipping || '0.00'), rightStartCol2 + 25, startY);
+          
+          doc.setFont('helvetica', 'bold');
+          doc.text("Discount Percent:", rightStartCol1, startY += lineSpacing.NormalSpacing);
+          doc.setFont('helvetica', 'normal');
+          doc.text(String(invoice.discountPercent || '0.00'), rightStartCol2 + 25, startY);
+          
+          doc.setFont('helvetica', 'bold');
+          doc.text("Grand Total Rs.:", rightStartCol1, startY += lineSpacing.NormalSpacing);
+          doc.setFont('helvetica', 'normal');
+          doc.text(String(invoice.total || '0.00'), rightStartCol2 + 25, startY);
+          
+          doc.setFont('helvetica', 'bold');
+          doc.text("Amount Paid:", rightStartCol1, startY += lineSpacing.NormalSpacing);
+          doc.setFont('helvetica', 'normal');
+          doc.text(String(invoice.amount_paid || '0.00'), rightStartCol2 + 25, startY);
+          
+          doc.setFont('helvetica', 'bold');
+          doc.text("Balance Rs.:", rightStartCol1, startY += lineSpacing.NormalSpacing);
+          doc.setFont('helvetica', 'normal');
+          doc.text(String(invoice.balance_due || '0.00'), rightStartCol2 + 25, startY);
+          
+          // Generate PDF Buffer
+          const pdfBuffer = doc.output('arraybuffer');
+          resolve(Buffer.from(pdfBuffer));
+      } catch (error) {
+          console.error('Error in PDF generation:', error);
+          reject(error);
       }
-
-  
-
-      // Draw Total Section
-      const summaryStartY = doc.y + 20; // Adjust spacing after the last table row
-      const summaryLabelX = 330; // Left alignment for labels
-      const valueOffset = 80; // Space between label and value
-      
-      // Utility function to calculate dynamic line width based on text size
-      function drawDynamicLine(startX, startY, label, value) {
-          const valueWidth = doc.widthOfString(value); // Get width of the value string
-          const endX = startX + valueOffset + valueWidth + 10; // Extend line slightly beyond value
-          doc.moveTo(startX, startY).lineTo(endX, startY).stroke();
-      }
-      
-      // Total
-      doc.font('Helvetica-Bold').text('Total', summaryLabelX, summaryStartY, { align: 'left' });
-      doc.text(
-          `Rs. ${invoice.total.toFixed(2)}`,
-          summaryLabelX + valueOffset,
-          summaryStartY,
-          { align: 'left' }
-      );
-      // Draw line under Total
-      drawDynamicLine(summaryLabelX, summaryStartY + 15, 'Total', `Rs. ${invoice.total.toFixed(2)}`);
-      
-      // Paid Amount
-      doc.font('Helvetica-Bold').text('Paid Amount', summaryLabelX, summaryStartY + 25, { align: 'left' });
-      doc.text(
-          `Rs. ${invoice.amount_paid.toFixed(2)}`,
-          summaryLabelX + valueOffset,
-          summaryStartY + 25,
-          { align: 'left' }
-      );
-      // Draw line under Paid Amount
-      drawDynamicLine(summaryLabelX, summaryStartY + 40, 'Paid Amount', `Rs. ${invoice.amount_paid.toFixed(2)}`);
-      
-      // Balance Due
-      doc.font('Helvetica-Bold').text('Balance Due', summaryLabelX, summaryStartY + 50, { align: 'left' });
-      doc.text(
-          `Rs. ${invoice.balance_due.toFixed(2)}`,
-          summaryLabelX + valueOffset,
-          summaryStartY + 50,
-          { align: 'left' }
-      );
-      // Draw line under Balance Due
-      drawDynamicLine(summaryLabelX, summaryStartY + 65, 'Balance Due', `Rs. ${invoice.balance_due.toFixed(2)}`);
-      
-      // Notes Section
-      doc.fontSize(10).font('Helvetica').text(`Notes: ${invoice.Notes}`,summaryLabelX,summaryStartY+100);
-      doc.moveDown();
-
-      // Finalize the document
-      doc.end();
   });
 }
+
 
 // Excel
 
