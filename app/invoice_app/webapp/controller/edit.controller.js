@@ -413,11 +413,17 @@ onTemplateclick: function () {
 },
 
 onImageSelect: function (oEvent) {
+    var invoiceModel = this.getView().getModel("invoiceModel");
+    // var first = "1"
+    // var second = "2"
     const sImageId = oEvent.getSource().getCustomData()[0].getValue();
     if (sImageId === "image_1") {
+       
+        invoiceModel.setProperty("/template", "1");
         console.log("Image 1 selected");
         // Logic for image 1
     } else if (sImageId === "image_2") {
+        invoiceModel.setProperty("/template", "2");
         console.log("Image 2 selected");
         // Logic for image 2
     }
