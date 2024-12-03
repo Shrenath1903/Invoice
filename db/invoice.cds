@@ -9,9 +9,14 @@ entity Invoice:managed {
         invoice_no    : Integer;
         date          : Date;
         company_name  : String;
-        Company_gst_no   : String;
+        Company_gst_no : String;
         bill_to       : String;
         ship_to       : String;
+        bill_from_name    : String;
+        bill_from_address : String;
+        bill_from_city : String;
+        bill_from_zip : String;
+        bill_from_country : String;
         payment_terms : String;
         due_date      : Date;
         sub_total     : Integer;
@@ -27,6 +32,11 @@ entity Invoice:managed {
         Currency      : String;
         mail_id       : String;
         text       : String;
+        bill_to_name : String;
+        bill_to_city : String;
+        bill_to_zip  : Integer;
+        bill_to_country : String;
+        template   : Integer;
         Items         : Composition of many InvoiceItems
                                 on Items.po_no = $self; // 
 }
