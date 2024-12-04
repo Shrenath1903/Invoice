@@ -34,6 +34,7 @@ entity Invoice:managed {
         text       : String;
         bill_to_name : String;
         bill_to_city : String;
+        bill_to_address : String;
         bill_to_zip  : Integer;
         bill_to_country : String;
         template   : Integer;
