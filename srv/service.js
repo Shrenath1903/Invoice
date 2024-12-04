@@ -436,7 +436,7 @@ async function generatePdfBufferTemplate_2(invoice) {
           ],
           [
             {
-              content: invoice.Terms,
+              content: invoice.Notes,
               styles: {
                 halign: 'left'
               }
@@ -507,12 +507,12 @@ doc.text(String(invoice.Company_gst_no || 'GST No Missing'), 80, startY);
 doc.setFont('helvetica', 'bold');
 doc.text("PURCHASE ORDER NO. :", startX, startY += lineSpacing.NormalSpacing);
 doc.setFont('helvetica', 'normal');
-doc.text(String(invoice.po_no || 'PO No Missing'), 190, startY);
+doc.text(String(invoice.po_no || 'PO No Missing'), 165, startY);
 
 doc.setFont('helvetica', 'bold');
 doc.text("PAYMENT TERMS :", startX, startY += lineSpacing.NormalSpacing);
 doc.setFont('helvetica', 'normal');
-doc.text(String(invoice.payment_terms || 'Payment Terms Missing'), 150, startY);
+doc.text(String(invoice.payment_terms || 'Payment Terms Missing'), 140, startY);
 
 // Invoice Details
 let tempY = startY - 30;
@@ -534,7 +534,7 @@ doc.text(String(invoice.due_date || 'Due Date Missing'), rightStartCol2, tempY);
 doc.setFont('helvetica', 'bold');
 doc.text("BILL TO:", rightStartCol1, tempY += lineSpacing.NormalSpacing);
 doc.setFont('helvetica', 'normal');
-doc.text(String(invoice.bill_to || 'Bill To Missing'), rightStartCol2, tempY);
+doc.text(String(invoice.bill_to_country || 'Bill To Missing'), rightStartCol2, tempY);
 
 doc.setFont('helvetica', 'bold');
 doc.text("SHIP TO:", rightStartCol1, tempY += lineSpacing.NormalSpacing);
