@@ -59,9 +59,19 @@ entity PDFEntity {
 
 entity Files:  cuid,managed{
     @Core.MediaType : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        content : LargeBinary;
+    content : LargeBinary;
     fileName: String;
     size: Integer;
     url: String;
 }
 
+// entity Files : cuid, managed {
+//     @Core.MediaType  : mediaType
+//     content   : LargeBinary;
+
+//     @Core.IsMediaType: true
+//     mediaType : String;
+//     fileName  : String;
+//     size      : Integer;
+//     url       : String;
+// }

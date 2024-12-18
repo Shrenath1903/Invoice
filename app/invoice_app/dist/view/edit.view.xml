@@ -21,86 +21,139 @@
 			</headerContent>
 			<sections>
 				<!-- Invoice Header Section -->
-				<ObjectPageSection title="Invoice Header">
+				<ObjectPageSection title="Invoice Header" >
 					<subSections>
-						<ObjectPageSubSection>
+						<ObjectPageSubSection title="Invoice Details" showTitle="false">
 							<f:SimpleForm
-                                editable="true"
-                                layout="ColumnLayout"
-                                columnsM="2"
-                                columnsL="2"
-                                columnsXL="4"
-                            >
+                editable="false"
+                layout="ResponsiveGridLayout"
+                labelSpanM="2"
+                labelSpanL="2"
+                columnsM="2"
+                columnsL="2"
+                columnsXL="2"
+                singleContainerFullSize="false">
 								<f:content>
-									<m:Label text="Purchase Order Number" />
-									<m:Input
-                                        width="50%"
+								 <m:Toolbar>
+                        <m:Title text="Purchase Details " level="H3" />
+                    </m:Toolbar>
+									<m:Label text="PO Number" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+									<m:Input width="60%" class="sapUiTinyMarginTop sapUiMediumMarginEnd"
+                                       
                                         value="{invoiceModel>/po_no}" liveChange="onNumbervalidation" change="onValidation"
                                     />
-									<m:Label text="Invoice Number" />
-									<m:Input change="onValidation"
-                                        width="50%"
+									<m:Label text="Invoice Number" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+									<m:Input width="60%" change="onValidation" class="sapUiTinyMarginTop sapUiMediumMarginEnd"
+                                       
                                         value="{invoiceModel>/invoice_no}" liveChange="onNumbervalidation"
                                     />
-									<m:Label text="Date" />
-									<!-- <m:DatePicker width="50%"   value="{invoiceModel>/date}" displayFormat="MM/dd/yyyy" /> -->
-									<m:DatePicker
-                                        width="50%"
+									<m:Label text="Date" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+									<!-- <m:DatePicker   value="{invoiceModel>/date}" displayFormat="MM/dd/yyyy" /> -->
+									<m:DatePicker width="60%"
+                                       class="sapUiTinyMarginTop sapUiMediumMarginEnd"
                                         value="{'path':'invoiceModel>/date','type':'sap.ui.model.type.Date','formatOptions': {'pattern': 'dd-MM-yyyy'}}"
                                     />
-									<m:Label text="Company Name" />
-									<m:Input
-                                        width="50%"
-                                        value="{invoiceModel>/company_name}"
+								<m:Label text="Notes" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+									<m:Input width="60%" class="sapUiTinyMarginTop sapUiMediumMarginEnd"
+                                       
+                                        value="{invoiceModel>/Notes}"
                                     />
-									<m:Label text="Payment Terms" />
-									<m:Input
-                                        width="50%"
-                                        value="{invoiceModel>/payment_terms}"
+									
+									
+									 <m:Toolbar>
+                        <m:Title text="Payment Details " level="H3" />
+                    </m:Toolbar>
+					<m:Label text="Company" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+									<m:Input width="60%" class="sapUiTinyMarginTop sapUiMediumMarginEnd" value="{invoiceModel>/company_name}"
                                     />
-									<m:Label text="Due Date" />
-									<m:DatePicker
-                                        width="50%"
-                                        placeholder="Select Due Date"
-                                        value="{'path':'invoiceModel>/due_date','type':'sap.ui.model.type.Date','formatOptions': {'pattern': 'dd-MM-yyyy'}}"
-                                        displayFormat="MM/dd/yyyy"
-                                    />
-									<m:Label text="Bill To" />
-									<m:Input  width="50%"
+									<!-- <m:Label text="Bill To" />
+									<m:Input width="60%" 
                                        
                                         value="{invoiceModel>/bill_to}"
                                     />
 									<m:Label text="Ship To" />
-									<m:Input
-                                        width="50%"
+									<m:Input width="60%"
+                                       
                                         value="{invoiceModel>/ship_to}"
+                                    /> -->
+									<m:Label text="Pay Terms" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+									<m:Input width="60%" class="sapUiTinyMarginTop sapUiMediumMarginEnd"
+                                       
+                                        value="{invoiceModel>/payment_terms}"
                                     />
-									<m:Label
+									<m:Label text="Due Date" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+									<m:DatePicker width="60%" class="sapUiTinyMarginTop sapUiMediumMarginEnd"
+                                       
+                                        placeholder="Select Due Date"
+                                        value="{'path':'invoiceModel>/due_date','type':'sap.ui.model.type.Date','formatOptions': {'pattern': 'dd-MM-yyyy'}}"
+                                        displayFormat="MM/dd/yyyy"
+                                    />
+									
+									<m:Label class="sapUiTinyMarginTop sapUiMediumMarginEnd"
                                         text="Currency"
                                         wrapping="true"
                                     />
-									<m:Select width="50%">
+									<m:Select selectedKey="{invoiceModel>/Currency}" width="60%" class="sapUiTinyMarginTop sapUiMediumMarginEnd"> 
 										<core:Item
                                             key="selectOption"
                                             text="--SELECT CURRENCY--"
                                         />
 										<core:Item
-                                            key="INR"
+                                            key=" "
                                             text="INR (₹)"
                                         />
 										<core:Item
-                                            key="USD"
+                                            key="$"
                                             text="USD ($)"
                                         />
 									</m:Select>
-									<m:Label text="Notes" />
-									<m:Input
-                                        width="50%"
-                                        value="{invoiceModel>/Notes}"
-                                    />
+									
+
 								</f:content>
 							</f:SimpleForm>
 						</ObjectPageSubSection>
+											<ObjectPageSubSection title="Billing Section" showTitle="false">
+							<f:SimpleForm
+                editable="false"
+                layout="ResponsiveGridLayout"
+                labelSpanM="2"
+                labelSpanL="2"
+                columnsM="2"
+                columnsL="2"
+                columnsXL="2"
+                singleContainerFullSize="false">
+								<f:content>
+					<m:Toolbar>
+                        <m:Title text="Billing From Details " level="H3" />
+                    </m:Toolbar>
+							<m:Label text="Name" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							<m:Input width="60%" value="{invoiceModel>/bill_from_name}" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							<m:Label text="Address" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							<m:Input width="60%" value="{invoiceModel>/bill_from_address}" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							<m:Label text="City" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							<m:Input width="60%" value="{invoiceModel>/bill_from_city}" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							<m:Label text="Zip code" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							<m:Input width="60%" value="{invoiceModel>/bill_from_zip}" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							<m:Label text="Country" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							<m:Input width="60%" value="{invoiceModel>/bill_from_country}" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+
+								 <m:Toolbar>
+                        <m:Title text="Billing To Details " level="H3" />
+                    </m:Toolbar>
+							<m:Label text="Name" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							<m:Input width="60%" value="{invoiceModel>/bill_to_name}" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							<m:Label text="Address" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							<m:Input width="60%" value="{invoiceModel>/bill_to_address}" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							<m:Label text="City" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							<m:Input width="60%" value="{invoiceModel>/bill_to_city}" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							<m:Label text="Zip Code" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							<m:Input width="60%" value="{invoiceModel>/bill_to_zip}" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							<m:Label text="Country" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							<m:Input width="60%" value="{invoiceModel>/bill_to_country}" class="sapUiTinyMarginTop sapUiMediumMarginEnd"/>
+							</f:content>
+							</f:SimpleForm>
+						</ObjectPageSubSection>
+								
 					</subSections>
 				</ObjectPageSection>
 				<!-- Invoice Items Section -->
@@ -144,8 +197,8 @@
 									<m:ColumnListItem>
 										<m:cells>
 											<m:Input placeholder="Enter Description" value="{invoiceItemModel>description}"/>
-											<m:Input width="55%" type="Number" placeholder="Qty" value="{invoiceItemModel>qty}" liveChange="onNumbervalidation" change="onValidation"/>
-											<m:Input width="55%" type="Number" placeholder="Rate"  value="{invoiceItemModel>rate}" change=".onCalAmount" liveChange="onNumbervalidation"/>
+											<m:Input width="60%" type="Number" placeholder="Qty" value="{invoiceItemModel>qty}" liveChange="onNumbervalidation" change="onValidation"/>
+											<m:Input width="60%" type="Number" placeholder="Rate"  value="{invoiceItemModel>rate}" change=".onCalAmount" liveChange="onNumbervalidation"/>
 											<m:Text text="{invoiceItemModel>amount}" />
 											<m:Button text="Delete" type="Reject"  press=".onDeleteItem"/>
 										</m:cells>
@@ -157,7 +210,7 @@
 				</ObjectPageSection>
 			</sections>
 			<!-- Invoice Details Section -->
-			<ObjectPageSection title="Invoice Details">
+			<ObjectPageSection title="Invoice - Payment Details">
 				<subSections>
 					<ObjectPageSubSection>
 						<f:SimpleForm
@@ -169,21 +222,21 @@
                         >
 							<f:content>
 								<m:Label text="Subtotal" />
-								<m:Text  width="50%" text="{invoiceModel>/sub_total}" />
+								<m:Text  text="{invoiceModel>/sub_total}" />
 								<m:Label text="Discount Percentage" />
-								<m:Input width="50%" value="{invoiceModel>/discountPercent}" change="onDiscounted" liveChange="onNumbervalidation"/>
+								<m:Input width="60%" value="{invoiceModel>/discountPercent}" change="onDiscounted" liveChange="onNumbervalidation"/>
 								<m:Label text="Discounted Value" />
-								<m:Text width="50%" text="{invoiceModel>/discount}"/>
+								<m:Text text="{invoiceModel>/discount}"/>
 								<m:Label text="Tax" />
-								<m:Input width="50%" value="{invoiceModel>/tax}" change="onCalculateTotal" liveChange="onNumbervalidation"/>
+								<m:Input width="60%" value="{invoiceModel>/tax}" change="onCalculateTotal" liveChange="onNumbervalidation"/>
 								<m:Label text="Shipping" />
-								<m:Input width="50%"  value="{invoiceModel>/shipping}" change="onCalculateTotal" liveChange="onNumbervalidation"/>
+								<m:Input width="60%"  value="{invoiceModel>/shipping}" change="onCalculateTotal" liveChange="onNumbervalidation"/>
 								<m:Label text="Total" />
-								<m:Text width="50%" text="{invoiceModel>/total}"/>
+								<m:Text text="{invoiceModel>/total}"/>
 								<m:Label text="Amount Paid" />
-								<m:Input width="50%" value="{invoiceModel>/amount_paid}" change="onCalAmtPaid" liveChange="onNumbervalidation"	/>
+								<m:Input width="60%" value="{invoiceModel>/amount_paid}" change="onCalAmtPaid" liveChange="onNumbervalidation"	/>
 								<m:Label text="Balance Due" />
-								<m:Text width="50%" text="{invoiceModel>/balance_due}"/>
+								<m:Text text="{invoiceModel>/balance_due}"/>
 							</f:content>
 						</f:SimpleForm>
 					</ObjectPageSubSection>
@@ -204,9 +257,14 @@
                             press=".onDownloadPDF"
                             visible="{visibilityModel>/v_db}"
                         />
-						<m:Button
+						<!-- <m:Button
                             text="Download Pdf"
                             press=".downloadInvoice"
+                            visible="{visibilityModel>/v_local}"
+                        /> -->
+						<m:Button
+                            text="Download Pdf"
+                            press=".onTemplateclick"
                             visible="{visibilityModel>/v_local}"
                         />
 						<m:Button

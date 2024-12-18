@@ -4,12 +4,33 @@
 # {
 #     "po_no": 12345
 # }
+@url=http://localhost:36197
+### Step 2: Upload File Content to the Created Entity
+PUT {{url}}/odata/v2/invoice-service/Files('113')/content
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet  # MIME type for Excel
+Content-Disposition: attachment; filename="test.xlsx"
 
+< ./test.xlsx  
 
 ### Step 1: Create File Metadata Entry
-GET http://localhost:4004/odata/v2/invoice-service/PDFEntity
+POST  {{url}}/odata/v2/invoice-service/Files
 Content-Type: application/json
+
+{
+  "ID": "113",
+  "fileName": "test.xlsx"
+}
+
+### Step 1: Create File Metadata Entry
+GET {{url}}/odata/v2/invoice-service/Files('113')
+
 
 ### // Check mail
 POST http://localhost:4004/odata/v4/invoice-service/sendmail
 Content-Type: application/json
+
+###
+PUT  {{url}}/odata/v2/invoice-service/Files('113')/content
+Content-Type: application/pdf
+
+< ./t2.pdf

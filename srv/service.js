@@ -17,12 +17,15 @@ const { sendMail } = require('@sap-cloud-sdk/mail-client');
 module.exports = cds.service.impl(async function () {
 
  
-    // this.before('CREATE', 'Files', req => {
-    //     console.log('Create called')
-    //     console.log(JSON.stringify(req.data))
-    //     req.data.url = `/invoice-service/Files(${req.data.ID})/content`
-    // })
+    this.before('CREATE', 'Files', req => {
+        console.log('Create called')
+        console.log(JSON.stringify(req.data))
+        req.data.url = `/invoice-service/Files(${req.data.ID})/content`
+    })
 
+    this.on('GET','Files',req =>{
+      console.debug(req)
+    })
     // const db = await cds.connect.to("db");
     // this.before("CREATE", 'Invoice', async (req) => {
     //   const { Items } = req.data;
