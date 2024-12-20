@@ -1,1 +1,1 @@
-using invoice_service as service from '../../srv/service';
+using invoice_service as service from '../../srv/handler';

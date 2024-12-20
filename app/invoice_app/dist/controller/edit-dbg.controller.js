@@ -24,8 +24,24 @@ sap.ui.define([
             oRouter.getRoute("edit").attachPatternMatched(this._onObjectMatched, this);
 
             // this.onNumbervalidation(oEvent)
+
+            this.setheaderImage()
+
+
         },
 
+        setheaderImage: function() {
+            var sImagePath1 = jQuery.sap.getModulePath("invoiceapp", "/Image/invoiceFormat-1.png")
+            var sImagePath2 = jQuery.sap.getModulePath("invoiceapp", "/Image/invoiceFormat-2.png")
+
+            var imageData = {
+                img_1: sImagePath1,
+                img_2: sImagePath2
+            };
+
+            var imageModel = new sap.ui.model.json.JSONModel(imageData);
+            this.getView().setModel(imageModel, "imageModel");
+        },
 
         _onObjectMatched: function (oEvent) {
             var argument = oEvent.getParameter("arguments")
@@ -180,27 +196,40 @@ sap.ui.define([
 
         testData: function () {
 
-            var data = {
-                invoice_no    : "101",
-                date          : "",
-                company_name  : "sap",
-                Company_gst_no  : "37B76C238B7E1Z5",
-                bill_to       : "Germany",
-                ship_to       : "Pondy",
-                payment_terms : "Cash",
-                due_date      : "",
-                sub_total     : "4500",
-                discount      : "200",
-                discountPercent : "10",
-                tax           : "500",
-                shipping      : "300",
-                total         : "5000",
-                amount_paid   : "100",
-                balance_due   : "4900",
-                Notes         : "Good",
-                Terms         : "no",
-                Currency      : "Rs",
-            }
+            var data = {          
+                invoice_no     : "101",
+                date           : "2024-12-04",        
+                company_name   : "sap",
+                Company_gst_no : "37B76C238B7E1Z5",
+                bill_to        : "Germany",
+                ship_to        : "Pondy",
+                bill_from_name : "SAP Business",
+                bill_from_address : "123 SAP St.",
+                bill_from_city : "Bangalore",
+                bill_from_zip  : "560001",            
+                bill_from_country : "India",
+                payment_terms  : "Cash",
+                due_date       : "2024-12-10",        
+                sub_total      : 4500,
+                discount       : 200,
+                discountPercent: 10,
+                tax            : 500,
+                shipping       : 300,
+                total          : 5000,
+                amount_paid    : 100,
+                balance_due    : 4900,
+                Notes          : "Good",
+                Terms          : "no",
+                Currency       : "INR",
+                mail_id        : "shrenathuiux@gmail.com", 
+                text           : "This is a test invoice", 
+                bill_to_name   : "John Doe",           
+                bill_to_city   : "Berlin",             
+                bill_to_address : "456 ABC Road",      
+                bill_to_zip    : 10115,               
+                bill_to_country : "Germany",           
+                template       : 1
+            };
             var invoiceModel = this.getView().getModel("invoiceModel")
             invoiceModel.setData(data);
 
@@ -267,18 +296,12 @@ sap.ui.define([
             var subTotal = oModel.getProperty("/sub_total");
             var discountPercent = oModel.getProperty("/discountPercent");
             if (subTotal) {
-                var discount = (subTotal * discountPercent) / 100;;
-                oModel.setProperty("/discount", discount);
+                var discount = (subTotal * discountPercent) / 100;
+                var value =  subTotal - discount 
+                oModel.setProperty("/discount", value);
             }
         },
-        // onDiscounted: function (oEvent) {
-        //     var oModel = this.getView().getModel("invoiceModel");
-        //     var subTotal = oModel.getProperty("/sub_total");
-        //     if (subTotal) {
-        //         var discount = (subTotal * 0.85).toFixed(2); 
-        //         oModel.setProperty("/discount", discount);
-        //     }
-        // },
+
         onCalculateTotal: function (oEvent) {
             invoiceRef.setInitialSelectState(oEvent)
             var oModel = this.getView().getModel("invoiceModel");
@@ -287,8 +310,8 @@ sap.ui.define([
             var shipping = parseFloat(oModel.getProperty("/shipping")) || 0;
 
 
-            var taxAmount = (discount * tax) / 100;
-            var total = discount + taxAmount + shipping;
+            // var taxAmount = (discount * tax) / 100;
+            var total = discount + tax + shipping;
             oModel.setProperty("/total", total.toFixed(2));
         },
         onCalAmtPaid: function (oEvent) {
@@ -316,7 +339,7 @@ sap.ui.define([
             invoiceRef.setInitialSelectState(oEvent)
         },
 
-
+// Mail pop Over start
         onOpenPopover: function () {
             var oView = this.getView();
 
@@ -324,7 +347,7 @@ sap.ui.define([
 
             if (!this._oDialog) {
                 this._oDialog = sap.ui.xmlfragment(oView.getId(),
-                    "invoiceapp.view.InputPopover",
+                    "invoiceapp.view.mailPopOver",
                     this
                 );
                 oView.addDependent(this._oDialog);
@@ -336,7 +359,7 @@ sap.ui.define([
          
         },
 
-        onCloseDialog: function () {
+        onMailPopup: function () {
             if (this._oDialog) {
                 this._oDialog.close();
             }
@@ -368,25 +391,60 @@ sap.ui.define([
                     },
                     error: function (oError) {
                         var errorJson = JSON.parse(oError.responseText);
-                        // MessageBox.error(errorJson.error.message.value, {
-                        //     icon: sap.m.MessageBox.Icon.ERROR,
-                        //     title: oError.statusText
-                        // });
-                        cegControllerRef._showServiceError(errorJson)
-                        //MessageToast.show("Error While Saving CEG Information");
-                        // var errorJson = JSON.parse(oError.responseText);
-                        // MessageBox.error(errorJson.error.message.value, {
-                        //     icon: sap.m.MessageBox.Icon.ERROR,
-                        //     title: oError.statusText
-                        // });
-                       inputEnableModel.setProperty("/busy",false)
-
+                        invoiceRef._showServiceError(errorJson)
                     }
                 });
 
             // Close the dialog
             this._oDialog.close();
         },
+// Mail pop Over end
+onTemplateclick: function () {
+    var oView = this.getView();
+
+    // Check if the fragment is already loaded
+
+    if (!this.template_dialog) {
+        this.template_dialog = sap.ui.xmlfragment(oView.getId(),
+            "invoiceapp.view.templatePopOver",
+            this
+        );
+        oView.addDependent(this.template_dialog);
+        this.template_dialog.open();
+    } else {
+        this.template_dialog.open();
+    }
+
+ 
+},
+
+onImageSelect: function (oEvent) {
+    var invoiceModel = this.getView().getModel("invoiceModel");
+    // var first = "1"
+    // var second = "2"
+    const sImageId = oEvent.getSource().getCustomData()[0].getValue();
+    if (sImageId === "image_1") {
+       
+        invoiceModel.setProperty("/template", "1");
+        console.log("Image 1 selected");
+        // Logic for image 1
+    } else if (sImageId === "image_2") {
+        invoiceModel.setProperty("/template", "2");
+        console.log("Image 2 selected");
+        // Logic for image 2
+    }
+},
+
+
+ontemplatePopOver: function () {
+    if (this.template_dialog) {
+        this.template_dialog.close();
+    }
+},
+
+
+
+
 
     });
 });
