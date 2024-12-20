@@ -3,11 +3,17 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/m/MessageToast",
     'sap/m/MessageBox',
-], (Controller,MessageToast,MessageBox) => {
+    "sap/ui/model/json/JSONModel",
+    "sap/ui/unified/FileUploader"
+], (Controller,MessageToast,MessageBox,JSONModel,FileUploader) => {
     "use strict";
 
     return Controller.extend("invoiceapp.controller.main", {
         onInit() {
+            var invoiceExcelModel = new JSONModel({
+                rows: [] // Empty rows initially
+              });
+              this.getView().setModel(invoiceExcelModel,"invoiceExcelModel");
         },
 
         onPress: function (oEvent) {
@@ -163,6 +169,111 @@ sap.ui.define([
                     MessageToast.show("File upload failed.");
                 }
             });
+        },
+
+        //  testing 
+        onFileChange: function (oEvent) {
+            var oFileUploader = oEvent.getSource();
+            var oFile = oFileUploader.oFileUpload.files[0];
+      
+            if (oFile) {
+              var reader = new FileReader();
+              reader.onload = this._onFileLoaded.bind(this);
+              reader.readAsArrayBuffer(oFile);
+            }
+          },
+      
+          _onFileLoaded: function (oEvent) {
+            var arrayBuffer = oEvent.target.result;
+            var data = new Uint8Array(arrayBuffer);
+            var workbook = XLSX.read(data, { type: 'array' });
+      
+            // Assuming the first sheet is the one to be processed
+            var sheet = workbook.Sheets[workbook.SheetNames[0]];
+            var jsonData = XLSX.utils.sheet_to_json(sheet);
+      
+            // Now set the parsed data to the model
+            var invoiceExcelModel = this.getView().getModel("invoiceExcelModel");
+            // invoiceExcelModel.setProperty("/rows", jsonData);
+            invoiceExcelModel.setData({ items: jsonData })
+          },
+      
+          handleUploadPress: function () {
+            var oFileUploader = this.byId("fileUploader");
+            oFileUploader.upload(); // Trigger file upload if needed
+          },
+      
+          onPress: function (oEvent) {
+            // Handle button press event if needed (e.g., for downloading the file)
+            sap.m.MessageToast.show("Download button pressed.");
+          },
+      
+          onNavigation: function (oEvent) {
+            // Handle row press (navigate to detail page or show more info)
+            sap.m.MessageToast.show("Row pressed.");
+          },
+          
+          store: function () {
+            var payloadss = {
+                po_no: 12345,
+                invoice_no: 67890,
+                date: "2024-12-20",
+                company_name: "ABC Pvt. Ltd.",
+                Company_gst_no: "GST12345",
+                bill_to: "Client Address",
+                ship_to: "Warehouse Address",
+                bill_from_name: "Supplier Name",
+                bill_from_address: "Supplier Address",
+                bill_from_city: "Supplier City",
+                bill_from_zip: "123456",
+                bill_from_country: "Country",
+                payment_terms: "Net 30",
+                due_date: "2025-01-19",
+                sub_total: 1000,
+                discount: 50,
+                discountPercent: 5,
+                tax: 100,
+                shipping: 20,
+                total: 1070,
+                amount_paid: 500,
+                balance_due: 570,
+                Notes: "Thank you for your business.",
+                Terms: "Payment due within 30 days.",
+                Currency: "USD",
+                mail_id: "client@example.com",
+                text: "Invoice text",
+                bill_to_name: "Client Name",
+                bill_to_city: "Client City",
+                bill_to_address: "Client Address",
+                bill_to_zip: 654321,
+                bill_to_country: "Client Country",
+                template: 1,
+                Items: [] // Empty array or omit completely if no items
+            };
+
+            
+            var invoiceExcelModel = this.getView().getModel("invoiceExcelModel").oData;
+            var payload = invoiceExcelModel.items[0];
+        
+            // Ensure payload is valid
+            if (!payload.Items) {
+                payload.Items = []; // Default to an empty array if missing
+            }
+        
+            var oDataModel = this.getView().getModel();
+            var path = `/Invoice`;
+            oDataModel.create(path, payload, {
+                success: function (oData, response) {
+                    invoiceRef.po_no = oData.po_no;
+                    invoiceRef.onDownloadPDF();
+                },
+                error: function (error) {
+                    sap.m.MessageToast.show("Error downloading PDF");
+                    console.error("Error downloading PDF:", error);
+                }
+            });
         }
+        
+
     });
 });

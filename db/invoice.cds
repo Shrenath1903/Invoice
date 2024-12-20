@@ -57,21 +57,52 @@ entity PDFEntity {
     virtual pdf : LargeBinary @Core.MediaType : 'application/pdf'; // Virtual field for PDF
 }
 
-entity Files:  cuid,managed{
-    @Core.MediaType : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    content : LargeBinary;
-    fileName: String;
-    size: Integer;
-    url: String;
+// entity Files:  cuid,managed{
+//     @Core.MediaType : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+//     content : LargeBinary;
+//     fileName: String;
+//     size: Integer;
+//     url: String;
+// }
+
+entity Doc : cuid, managed {
+    
+    @Core.MediaType  : mediaType
+    content   : LargeBinary;
+    @Core.IsMediaType: true
+    mediaType : String;
+    fileName  : String;
+    size      : Integer;
+    url       : String;
 }
 
-// entity Files : cuid, managed {
-//     @Core.MediaType  : mediaType
-//     content   : LargeBinary;
+entity FileUpload : cuid, managed {
+    @Core.MediaType : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    content : LargeBinary;  // Raw binary content of the Excel file
+    fileName : String;      // Original file name
+}
 
+entity UploadExcel : cuid, managed {
+    @Core.MediaType : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    content : LargeBinary;  // Raw binary content of the Excel file
+    fileName : String;      // Original file name
+}
+
+entity Users {
+    key ID : UUID;
+    Name : String;
+    Age  : Integer;
+    Email : String;
+}
+
+
+
+// entity Files: cuid, managed{
+//     @Core.MediaType: mediaType
+//     content: LargeBinary;
 //     @Core.IsMediaType: true
-//     mediaType : String;
-//     fileName  : String;
-//     size      : Integer;
-//     url       : String;
+//     mediaType: String;
+//     fileName: String;
+//     size: Integer;
+//     url: String;
 // }

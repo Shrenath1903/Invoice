@@ -5,93 +5,88 @@
 	xmlns:upload="sap.m.upload"
     xmlns="sap.m">
     <Page id="page" title="{i18n>title}">
-      <u:FileUploader
-            id="uploader"
-            fileType="xlsx"
-            multiple="false"
-            fileEmpty=".onFileEmpty"
-            typeMissmatch=".onTypeMismatch"
-            sendXHR="true"
-            useMultipart="false"
-            placeholder="Choose an Excel file..."
-            httpRequestMethod="Put"
-            uploadOnChange="true"
-            uploadComplete=".onUploadComplete"
-            width="100%" />
-
-
-
-
-<Button press=".fileupload" text="Upload"></Button>
-
+     
     	<ScrollContainer width="100%" horizontal="true" vertical="false">
+		  <u:FileUploader
+    id="fileUploader"
+    name="myFileUpload"
+    uploadUrl="upload/"
+    tooltip="Upload your file to the local server"
+    change="onFileChange"/>
 
-	<Table id="idInvoiceTable"
-		inset="false"
-		items="{path: '/Invoice'}"
-		width="auto"> <!-- Enable table to auto-expand -->
-		
-		<headerToolbar>
-			<OverflowToolbar>
-				<content>
-					<Title text="Invoice" level="H2"/>
-				</content>
-			</OverflowToolbar>
-		</headerToolbar>
+  <Button
+    text="Upload File"
+    press="handleUploadPress"/>
 
-		<columns>
-			<Column >
-				<Text text="PO No." />
-			</Column>
-			<Column >
-				<Text text="Invoice No." />
-			</Column>
-			<Column >
-				<Text text="Date" />
-			</Column>
-			<Column >
-				<Text text="Company Name" />
-			</Column>
-			<Column >
-				<Text text="Bill To" />
-			</Column>
-			<Column >
-				<Text text="Ship To" />
-			</Column>
-		
-			<Column>
-				<Text text="Total" />
-			</Column>
-			<Column >
-				<Text text="Amount Paid" />
-			</Column>
-			<Column >
-				<Text text="Balance Due" />
-			</Column>
-			<Column >
-				<Text text="Download" />
-			</Column>
-		</columns>
+  
+  <Table id="dataTable" inset="false" items="{invoiceExcelModel>/items}" width="auto">
+    <headerToolbar>
+      <OverflowToolbar>
+        <content>
+          <Title text="Invoice" level="H2"/>
+        </content>
+      </OverflowToolbar>
+    </headerToolbar>
 
-		<items>
-			<ColumnListItem vAlign="Middle" type="Active" press="onNavigation">
-					
-				<cells>
-					<ObjectIdentifier title="{po_no}" />
-					<Text text="{invoice_no}" />
-					<Text text="{path: 'date', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' }}" />
-					<Text text="{company_name}" />
-					<Text text="{bill_to}" />
-					<Text text="{ship_to}" />
-					<Text text="{total}" />
-					<Text text="{amount_paid}"  />
-					<Text text="{balance_due}" />
-					<Button icon="sap-icon://download"  press="onPress"/>
+    <columns>
+      <Column>
+        <Text text="PO No." />
+      </Column>
+      <Column>
+        <Text text="Invoice No." />
+      </Column>
+      <Column>
+        <Text text="Date" />
+      </Column>
+      <Column>
+        <Text text="Company Name" />
+      </Column>
+      <Column>
+        <Text text="Bill To" />
+      </Column>
+      <Column>
+        <Text text="Ship To" />
+      </Column>
+      <Column>
+        <Text text="Total" />
+      </Column>
+      <Column>
+        <Text text="Amount Paid" />
+      </Column>
+      <Column>
+        <Text text="Balance Due" />
+      </Column>
+      <Column>
+        <Text text="Download" />
+      </Column>
+    </columns>
 
-				</cells>
-			</ColumnListItem>
-		</items>
-	</Table>
+    <items>
+      <ColumnListItem vAlign="Middle" type="Active" press="onNavigation">
+        <cells>
+          <ObjectIdentifier title="{invoiceExcelModel>po_no}" />
+          <Text text="{invoiceExcelModel>invoice_no}" />
+
+           <!-- <Text text="{ path: 'invoiceExcelModel>date', type: 'sap.ui.model.type.Date', formatOptions: { pattern: 'dd-MM-yyyy'}}" /> -->
+        <!-- <Text text="{
+    path: 'invoiceExcelModel>date',
+    type: 'sap.ui.model.type.Date',
+    formatOptions: {
+        pattern: 'MM/dd/yyyy' 
+    }
+}" /> -->
+
+          <Text text="{invoiceExcelModel>company_name}" />
+          <Text text="{invoiceExcelModel>bill_to}" />
+          <Text text="{invoiceExcelModel>ship_to}" />
+          <Text text="{invoiceExcelModel>total}" />
+          <Text text="{invoiceExcelModel>amount_paid}" />
+          <Text text="{invoiceExcelModel>balance_due}" />
+          <Button icon="sap-icon://download" press="onPress"/>
+        </cells>
+      </ColumnListItem>
+    </items>
+  </Table>
 </ScrollContainer>
  <footer>
                 <Bar>
@@ -104,6 +99,10 @@
                         <Button
                             text="Download PDF"
                             press=".onDownloadPDF"
+                        />
+                        <Button
+                            text="Store"
+                            press=".store"
                         />
                        
                     </contentRight>

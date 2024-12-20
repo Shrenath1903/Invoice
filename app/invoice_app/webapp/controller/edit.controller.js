@@ -249,9 +249,9 @@ sap.ui.define([
 
 
 
-        onNumbervalidation : function(oEvent) {
-            validateNumber(oEvent);
-         },
+        // onNumbervalidation : function(oEvent) {
+        //     validateNumber(oEvent);
+        //  },
 
         onCalAmount: function (oEvent) {
             console.log(oEvent)

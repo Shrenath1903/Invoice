@@ -6,7 +6,7 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
-    "@cap-js-community/odata-v2-adapter": "^1.13.7",
+    "@cap-js-community/odata-v2-adapter": "^1.13.8",
     "@cap-js/hana": "^1",
     "@sap-cloud-sdk/connectivity": "^3.23.0",
     "@sap-cloud-sdk/http-client": "^3.23.0",
@@ -15,6 +15,7 @@
     "@sap/cds-odata-v2-adapter-proxy": "^1.9.21",
     "@sap/xsenv": "^5.4.0",
     "@sap/xssec": "^4.2.7",
+    "axios": "^1.7.9",
     "buffer": "^6.0.3",
     "busboy": "^1.6.0",
     "cds-swagger-ui-express": "^0.10.0",
@@ -44,9 +45,8 @@
   "cds": {
     "requires": {
       "odata-v2": {
-        "auth":
-        {
-          "kind":"xsuaa"
+        "auth": {
+          "kind": "xsuaa"
         },
         "mailService": {
           "kind": "rest",
